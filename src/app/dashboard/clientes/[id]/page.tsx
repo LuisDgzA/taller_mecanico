@@ -321,13 +321,19 @@ export default async function ClienteDetailPage({
                             type="number"
                           />
                         </label>
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-2 flex flex-wrap gap-2">
                           <button
                             className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
                             type="submit"
                           >
                             Guardar vehículo
                           </button>
+                          <Link
+                            className="inline-flex h-11 items-center rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
+                            href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${vehiculo.id}`}
+                          >
+                            Crear servicio →
+                          </Link>
                         </div>
                       </form>
 
