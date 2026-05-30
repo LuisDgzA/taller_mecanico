@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { createBitacoraAction, deleteBitacoraAction } from "@/actions/bitacoras";
 import { updateServicioStatusAction } from "@/actions/servicios";
+import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
@@ -13,6 +14,7 @@ type ServicioDetail = {
   status: number;
   fecha_inicio: string;
   fecha_fin: string | null;
+  tracking_token: string | null;
   imagen_uno: string | null;
   imagen_dos: string | null;
   imagen_tres: string | null;
@@ -85,7 +87,7 @@ export default async function ServicioDetailPage({
     supabase
       .from("servicios")
       .select(
-        `id, descripcion, status, fecha_inicio, fecha_fin,
+        `id, descripcion, status, fecha_inicio, fecha_fin, tracking_token,
          imagen_uno, imagen_dos, imagen_tres, imagen_cuatro, imagen_cinco,
          vehiculo:vehiculos(id, placa, marca, modelo, color, anio,
            cliente:clientes(id, nombre, telefono)
@@ -267,6 +269,10 @@ export default async function ServicioDetailPage({
               >
                 Entregar vehículo →
               </Link>
+            ) : null}
+
+            {servicio.tracking_token ? (
+              <CopyLinkButton token={servicio.tracking_token} />
             ) : null}
           </div>
 

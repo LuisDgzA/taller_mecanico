@@ -8,6 +8,7 @@ import { requireCurrentStaffProfile } from "@/lib/current-staff";
 import { CreateServicioSchema, UpdateServicioStatusSchema } from "@/lib/schemas/servicio";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
+
 const BASE = "/dashboard/servicios";
 const NUEVO = "/dashboard/servicios/nuevo";
 
@@ -208,4 +209,67 @@ export async function updateServicioStatusAction(formData: FormData) {
   revalidatePath(`${BASE}/${parsed.data.id}`);
   revalidatePath(BASE);
   redirect(`${BASE}/${parsed.data.id}`);
+}
+
+export async function entregarServicioAction(formData: FormData) {
+  const staff = await requireCurrentStaffProfile();
+
+  const servicioId = Number(formData.get("servicioId"));
+  const signatureData = String(formData.get("signatureData") ?? "").trim();
+  const entregaBase = `${BASE}/${servicioId}/entrega`;
+
+  if (!Number.isFinite(servicioId) || servicioId <= 0) {
+    redirect(BASE);
+  }
+
+  if (!signatureData.startsWith("data:image/png;base64,")) {
+    redirect(buildActionRedirect(entregaBase, { error: "La firma es obligatoria." }));
+  }
+
+  const supabase = await createSupabaseServerActionClient();
+
+  // Upload signature PNG to Storage bucket "firmas"
+  const base64 = signatureData.split(",")[1];
+  const bytes = Buffer.from(base64, "base64");
+  const path = `${servicioId}/firma.png`;
+
+  let firmaUrl: string | null = null;
+  const { error: uploadError } = await supabase.storage
+    .from("firmas")
+    .upload(path, bytes, { contentType: "image/png", upsert: true });
+
+  if (!uploadError) {
+    firmaUrl = path;
+  }
+
+  // Atomic update: only succeeds when current status is 2 (Finalizado)
+  const updates: Record<string, unknown> = {
+    status: 3,
+    fecha_entrega: new Date().toISOString(),
+    usuario_entrega: staff.id,
+    ...(firmaUrl ? { firma_entrega_url: firmaUrl } : {}),
+  };
+
+  const { data, error } = await supabase
+    .from("servicios")
+    .update(updates)
+    .eq("id", servicioId)
+    .eq("status", 2)
+    .select("id");
+
+  if (error) {
+    redirect(buildActionRedirect(entregaBase, { error: error.message }));
+  }
+
+  if (!data || data.length === 0) {
+    redirect(
+      buildActionRedirect(entregaBase, {
+        error: "No se pudo registrar la entrega. El servicio debe estar en estado Finalizado.",
+      }),
+    );
+  }
+
+  revalidatePath(`${BASE}/${servicioId}`);
+  revalidatePath(BASE);
+  redirect(BASE);
 }
