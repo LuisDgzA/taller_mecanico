@@ -32,10 +32,10 @@ export function ServiciosSearch({
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center">
-      <div className="flex flex-1 gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
-          className="h-11 flex-1 rounded-2xl border border-slate-300 px-4 text-sm outline-none transition focus:border-slate-950"
+          className="h-12 flex-1 rounded-2xl border border-slate-300 px-4 text-sm outline-none transition focus:border-slate-950"
           placeholder="Buscar por placa o descripción…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -44,28 +44,32 @@ export function ServiciosSearch({
           }}
         />
         <button
-          className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
+          className="h-12 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400 sm:min-w-32"
           disabled={isPending}
+          type="button"
           onClick={() => navigate(search, defaultStatus)}
         >
           Buscar
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
-              defaultStatus === tab.value
-                ? "bg-slate-950 text-white"
-                : "border border-slate-300 hover:border-slate-950"
-            }`}
-            onClick={() => navigate(search, tab.value)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="-mx-1 overflow-x-auto px-1 pb-1">
+        <div className="flex min-w-max gap-2">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              className={`snap-start whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                defaultStatus === tab.value
+                  ? "bg-slate-950 text-white"
+                  : "border border-slate-300 bg-white hover:border-slate-950"
+              }`}
+              type="button"
+              onClick={() => navigate(search, tab.value)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

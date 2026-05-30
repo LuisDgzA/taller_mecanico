@@ -1,10 +1,31 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+import { AppFeedbackToaster } from "@/components/app-feedback-toaster";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Taller Mecánico",
-  description: "Migración del sistema del taller a Next.js y Supabase.",
+  description: "Sistema de gestión del taller mecánico.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Taller",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#020617",
 };
 
 export default function RootLayout({
@@ -19,6 +40,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <AppFeedbackToaster />
       </body>
     </html>
   );

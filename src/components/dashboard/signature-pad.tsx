@@ -2,10 +2,18 @@
 
 import { useRef, useState, useEffect } from "react";
 
+import { cn } from "@/lib/utils";
+
 export function SignaturePad({
   onChange,
+  className,
+  canvasClassName,
+  height = 220,
 }: {
   onChange: (dataUrl: string | null) => void;
+  className?: string;
+  canvasClassName?: string;
+  height?: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,8 +25,8 @@ export function SignaturePad({
     const container = containerRef.current;
     if (!canvas || !container) return;
     canvas.width = container.clientWidth;
-    canvas.height = 220;
-  }, []);
+    canvas.height = height;
+  }, [height]);
 
   const getPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current!;
@@ -71,12 +79,12 @@ export function SignaturePad({
   };
 
   return (
-    <div ref={containerRef} className="space-y-2">
+    <div ref={containerRef} className={cn("space-y-2", className)}>
       <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white">
         <canvas
           ref={canvasRef}
-          className="block touch-none"
-          style={{ height: 220, width: "100%" }}
+          className={cn("block touch-none", canvasClassName)}
+          style={{ height, width: "100%" }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

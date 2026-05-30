@@ -1,18 +1,13 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CarFront, ClipboardList, LayoutGrid, Users } from "lucide-react";
+import { UserRound } from "lucide-react";
 
 import { logoutAction } from "@/actions/auth";
+import { BottomNav } from "@/components/dashboard/bottom-nav";
+import { dashboardNavItems } from "@/components/dashboard/navigation-items";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-
-const navItems = [
-  { href: "/dashboard", label: "Inicio", icon: LayoutGrid },
-  { href: "/dashboard/servicios", label: "Servicios", icon: ClipboardList },
-  { href: "/dashboard/clientes", label: "Clientes", icon: CarFront },
-  { href: "/dashboard/usuarios", label: "Usuarios", icon: Users },
-];
 
 export default async function DashboardLayout({
   children,
@@ -29,8 +24,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8f5ef_0%,#efe5d7_100%)] text-slate-950">
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-4 lg:flex-row lg:gap-6 lg:px-6">
-        <aside className="mb-4 rounded-[2rem] border border-slate-900/10 bg-slate-950 px-5 py-6 text-white shadow-[0_30px_70px_-45px_rgba(15,23,42,0.8)] lg:mb-0 lg:w-72">
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:gap-6 lg:px-6">
+        <aside className="hidden rounded-[2rem] border border-slate-900/10 bg-slate-950 px-5 py-6 text-white shadow-[0_30px_70px_-45px_rgba(15,23,42,0.8)] lg:flex lg:w-72 lg:flex-col">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-orange-300/75">
               Taller Mecánico
@@ -44,7 +39,7 @@ export default async function DashboardLayout({
           </div>
 
           <nav className="mt-8 space-y-2">
-            {navItems.map((item) => {
+            {dashboardNavItems.map((item) => {
               const Icon = item.icon;
 
               return (
@@ -77,10 +72,32 @@ export default async function DashboardLayout({
           </div>
         </aside>
 
-        <div className="flex min-h-[80vh] flex-1 flex-col rounded-[2rem] border border-slate-900/10 bg-white/90 shadow-[0_30px_70px_-45px_rgba(15,23,42,0.35)]">
-          {children}
+        <div className="flex flex-1 flex-col gap-4 pb-24 lg:pb-0">
+          <header className="flex items-center justify-between rounded-[1.75rem] bg-slate-950 px-5 py-4 text-white shadow-[0_24px_60px_-40px_rgba(15,23,42,0.9)] lg:hidden">
+            <div>
+              <p className="text-xs uppercase tracking-[0.25em] text-orange-300/80">
+                Taller Mecánico
+              </p>
+              <p className="mt-1 text-sm font-semibold">Panel privado</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-medium">{staff.nombre}</p>
+                <p className="text-xs text-slate-300">Personal activo</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-2 text-slate-200">
+                <UserRound className="size-5" />
+              </div>
+            </div>
+          </header>
+
+          <div className="flex min-h-[80vh] flex-1 flex-col rounded-[2rem] border border-slate-900/10 bg-white/90 shadow-[0_30px_70px_-45px_rgba(15,23,42,0.35)]">
+            {children}
+          </div>
         </div>
       </div>
+
+      <BottomNav className="lg:hidden" />
     </div>
   );
 }

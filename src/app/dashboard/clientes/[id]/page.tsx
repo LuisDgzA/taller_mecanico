@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { deleteClienteAction, updateClienteAction } from "@/actions/clientes";
 import { createVehiculoAction, deleteVehiculoAction, updateVehiculoAction } from "@/actions/vehiculos";
+import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { PlateLookupCard } from "@/components/dashboard/plate-lookup-card";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
@@ -107,7 +108,7 @@ export default async function ClienteDetailPage({
         </div>
       ) : null}
 
-      <section className="mt-8 grid gap-5 xl:grid-cols-[0.88fr_1.12fr]">
+      <section className="mt-8 grid gap-5 lg:grid-cols-[0.88fr_1.12fr]">
         <div className="space-y-5">
           <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="border-b border-slate-200 pb-4">
@@ -164,12 +165,12 @@ export default async function ClienteDetailPage({
             <form action={deleteClienteAction} className="mt-4 border-t border-slate-200 pt-4">
               <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
               <input name="id" type="hidden" value={cliente.id} />
-              <button
+              <ConfirmSubmitButton
                 className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                type="submit"
+                confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
               >
                 Eliminar cliente y sus vehículos
-              </button>
+              </ConfirmSubmitButton>
             </form>
           </div>
 
@@ -255,10 +256,7 @@ export default async function ClienteDetailPage({
                 </div>
               ) : (
                 vehicleList.map((vehiculo) => (
-                  <div
-                    key={vehiculo.id}
-                    className="rounded-3xl border border-slate-200 p-5"
-                  >
+                  <div key={vehiculo.id} className="rounded-3xl border border-slate-200 p-5">
                     <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 pb-4">
                       <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
                         {vehiculo.placa}
@@ -268,7 +266,98 @@ export default async function ClienteDetailPage({
                       </p>
                     </div>
 
-                    <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_auto]">
+                    <details className="mt-4 lg:hidden">
+                      <summary className="cursor-pointer list-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                        Editar vehículo
+                      </summary>
+                      <div className="mt-4 space-y-4">
+                        <form action={updateVehiculoAction} className="grid gap-3 md:grid-cols-2">
+                          <input
+                            name="redirectTo"
+                            type="hidden"
+                            value={`/dashboard/clientes/${cliente.id}`}
+                          />
+                          <input name="id" type="hidden" value={vehiculo.id} />
+                          <input name="clienteId" type="hidden" value={cliente.id} />
+                          <label className="text-sm font-medium text-slate-700">
+                            Placa
+                            <input
+                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                              defaultValue={vehiculo.placa}
+                              name="placa"
+                              required
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Marca
+                            <input
+                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                              defaultValue={vehiculo.marca ?? ""}
+                              name="marca"
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Modelo
+                            <input
+                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                              defaultValue={vehiculo.modelo ?? ""}
+                              name="modelo"
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Color
+                            <input
+                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                              defaultValue={vehiculo.color ?? ""}
+                              name="color"
+                            />
+                          </label>
+                          <label className="text-sm font-medium text-slate-700">
+                            Año
+                            <input
+                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                              defaultValue={vehiculo.anio ?? ""}
+                              max={new Date().getFullYear()}
+                              min={1900}
+                              name="anio"
+                              type="number"
+                            />
+                          </label>
+                          <div className="md:col-span-2 flex flex-wrap gap-2">
+                            <button
+                              className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                              type="submit"
+                            >
+                              Guardar vehículo
+                            </button>
+                            <Link
+                              className="inline-flex h-11 items-center rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
+                              href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${vehiculo.id}`}
+                            >
+                              Crear servicio →
+                            </Link>
+                          </div>
+                        </form>
+
+                        <form action={deleteVehiculoAction}>
+                          <input
+                            name="redirectTo"
+                            type="hidden"
+                            value={`/dashboard/clientes/${cliente.id}`}
+                          />
+                          <input name="id" type="hidden" value={vehiculo.id} />
+                          <input name="clienteId" type="hidden" value={cliente.id} />
+                          <ConfirmSubmitButton
+                            className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                            confirmMessage="Se eliminará este vehículo. ¿Deseas continuar?"
+                          >
+                            Eliminar
+                          </ConfirmSubmitButton>
+                        </form>
+                      </div>
+                    </details>
+
+                    <div className="mt-4 hidden gap-4 lg:grid lg:grid-cols-[1fr_auto]">
                       <form action={updateVehiculoAction} className="grid gap-3 md:grid-cols-2">
                         <input
                           name="redirectTo"
@@ -345,12 +434,12 @@ export default async function ClienteDetailPage({
                         />
                         <input name="id" type="hidden" value={vehiculo.id} />
                         <input name="clienteId" type="hidden" value={cliente.id} />
-                        <button
+                        <ConfirmSubmitButton
                           className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                          type="submit"
+                          confirmMessage="Se eliminará este vehículo. ¿Deseas continuar?"
                         >
                           Eliminar
-                        </button>
+                        </ConfirmSubmitButton>
                       </form>
                     </div>
                   </div>

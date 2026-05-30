@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { createClienteAction, deleteClienteAction, updateClienteAction } from "@/actions/clientes";
+import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { Pagination } from "@/components/dashboard/pagination";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
@@ -162,7 +163,12 @@ export default async function ClientesPage({
           <div className="mt-6 space-y-4">
             {clientes.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
-                No hay clientes que coincidan con la búsqueda actual.
+                <p className="font-medium text-slate-700">
+                  No hay clientes que coincidan con la búsqueda actual.
+                </p>
+                <p className="mt-2">
+                  Ajusta el filtro o registra un cliente nuevo desde el panel lateral.
+                </p>
               </div>
             ) : (
               clientes.map((cliente) => (
@@ -229,12 +235,12 @@ export default async function ClientesPage({
                     <form action={deleteClienteAction} className="flex items-start">
                       <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
                       <input name="id" type="hidden" value={cliente.id} />
-                      <button
+                      <ConfirmSubmitButton
                         className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                        type="submit"
+                        confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
                       >
                         Eliminar
-                      </button>
+                      </ConfirmSubmitButton>
                     </form>
                   </div>
                 </div>

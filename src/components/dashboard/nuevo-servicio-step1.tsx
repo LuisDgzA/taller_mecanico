@@ -218,15 +218,15 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
           SEARCH SECTION — Plate OR Client
       ════════════════════════════════════════════ */}
       {!resolvedVehiculo && !selectedCliente ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5 space-y-4">
+        <div className="space-y-4 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
           {/* Plate search */}
-          <div>
+          <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
             <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
               Busca por placa
             </p>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
-                className="h-11 flex-1 rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-950"
+                className="h-12 flex-1 rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-950"
                 placeholder="Ej. ABC-123-A"
                 value={placaQuery}
                 onChange={(e) => setPlacaQuery(e.target.value)}
@@ -238,7 +238,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 }}
               />
               <button
-                className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
+                className="h-12 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400 sm:min-w-28"
                 disabled={isPending || !placaQuery.trim()}
                 type="button"
                 onClick={handlePlateLookup}
@@ -264,13 +264,13 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
           </div>
 
           {/* Client search */}
-          <div>
+          <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
             <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
               Busca el cliente por nombre o teléfono
             </p>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
-                className="h-11 flex-1 rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-950"
+                className="h-12 flex-1 rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-950"
                 placeholder="Ej. Aldo o 9991234567"
                 value={clienteQuery}
                 onChange={(e) => setClienteQuery(e.target.value)}
@@ -282,7 +282,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 }}
               />
               <button
-                className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
+                className="h-12 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400 sm:min-w-28"
                 disabled={isPending || clienteQuery.trim().length < 2}
                 type="button"
                 onClick={handleClienteSearch}
@@ -399,7 +399,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
           RESOLVED VEHICLE — show read-only summary
       ════════════════════════════════════════════ */}
       {resolvedVehiculo ? (
-        <div className="rounded-[1.75rem] border border-emerald-200 bg-emerald-50 p-5">
+        <div className="sticky top-3 z-10 rounded-[1.75rem] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">
@@ -447,7 +447,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
             <label className="text-sm font-medium text-slate-700">
               Placa *
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 defaultValue={placaQuery}
                 name="placa"
                 required
@@ -456,28 +456,28 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
             <label className="text-sm font-medium text-slate-700">
               Marca
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="marca"
               />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Modelo
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="modelo"
               />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Color
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="color"
               />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Año
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 max={new Date().getFullYear()}
                 min={1900}
                 name="anio"
@@ -500,21 +500,21 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
             <label className="text-sm font-medium text-slate-700 md:col-span-2">
               Nombre
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="nombre"
               />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Teléfono
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="telefono"
               />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Correo
               <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="correo"
                 type="email"
               />
@@ -528,7 +528,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
         (selectedCliente && selectedVehiculoId !== null) ||
         (!selectedCliente && !plateResult?.found)) ? (
         <button
-          className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
+          className="min-h-[52px] w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
           disabled={
             // Client selected but hasn't picked/chosen a vehicle option yet
             !!(selectedCliente && selectedVehiculoId === null)

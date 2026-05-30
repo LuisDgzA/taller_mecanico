@@ -32,8 +32,12 @@ export function EntregaForm({
         <p className="mt-1 text-sm text-slate-400">
           El cliente debe firmar en el recuadro para confirmar la recepción.
         </p>
-        <div className="mt-4">
-          <SignaturePad onChange={setSignatureData} />
+        <div className="mt-4 -mx-6 sm:mx-0">
+          <SignaturePad
+            canvasClassName="bg-white"
+            height={260}
+            onChange={setSignatureData}
+          />
         </div>
       </div>
 

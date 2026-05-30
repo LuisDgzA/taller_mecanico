@@ -95,10 +95,10 @@ export default async function ServiciosPage({
           </h1>
         </div>
         <Link
-          className="rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-950 px-4 text-sm font-semibold transition hover:bg-slate-800 sm:self-start"
           href="/dashboard/servicios/nuevo"
         >
-          + Agregar servicio
+          <span className="text-white">+ Agregar servicio</span>
         </Link>
       </div>
 
@@ -108,48 +108,56 @@ export default async function ServiciosPage({
 
       {list.length === 0 ? (
         <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-16 text-center text-sm text-slate-500">
-          {search || status
-            ? "No hay servicios que coincidan con los filtros."
-            : "No hay servicios registrados aún."}
+          <p className="font-medium text-slate-700">
+            {search || status
+              ? "No hay servicios que coincidan con los filtros."
+              : "No hay servicios registrados aún."}
+          </p>
+          <p className="mt-2">
+            {search || status
+              ? "Prueba limpiando la búsqueda o cambia el estado seleccionado."
+              : "Cuando registres el primer ingreso del taller, aparecerá aquí."}
+          </p>
         </div>
       ) : (
         <div className="mt-6 space-y-3">
           {list.map((s) => (
             <Link
               key={s.id}
-              className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400"
+              className="block rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-400 sm:p-5"
               href={`/dashboard/servicios/${s.id}`}
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                    {s.vehiculo?.placa ?? "—"}
-                  </span>
-                  <ServicioStatusBadge status={s.status} />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                      {s.vehiculo?.placa ?? "—"}
+                    </span>
+                    <ServicioStatusBadge status={s.status} />
+                  </div>
+
+                  <p className="mt-3 text-sm font-medium text-slate-800">
+                    {[s.vehiculo?.marca, s.vehiculo?.modelo].filter(Boolean).join(" ") || "Sin datos de vehículo"}
+                  </p>
+                  {s.vehiculo?.cliente?.nombre ? (
+                    <p className="mt-1 text-sm text-slate-500">
+                      Cliente: {s.vehiculo.cliente.nombre}
+                    </p>
+                  ) : null}
                 </div>
-                <span className="text-xs text-slate-400">
+                <span className="shrink-0 text-xs text-slate-400">
                   {formatRelativeDate(s.fecha_inicio)}
                 </span>
               </div>
 
-              <div className="mt-3">
-                <p className="text-sm font-medium text-slate-800">
-                  {[s.vehiculo?.marca, s.vehiculo?.modelo].filter(Boolean).join(" ") || "Sin datos de vehículo"}
+              {s.descripcion ? (
+                <p className="mt-3 line-clamp-2 text-sm text-slate-500">
+                  {s.descripcion}
                 </p>
-                {s.vehiculo?.cliente?.nombre ? (
-                  <p className="text-sm text-slate-500">
-                    {s.vehiculo.cliente.nombre}
-                  </p>
-                ) : null}
-                {s.descripcion ? (
-                  <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-                    {s.descripcion}
-                  </p>
-                ) : null}
-              </div>
+              ) : null}
 
               {s.status === 2 ? (
-                <div className="mt-3 inline-flex items-center rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                <div className="mt-3 inline-flex items-center rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
                   Listo para entrega
                 </div>
               ) : null}

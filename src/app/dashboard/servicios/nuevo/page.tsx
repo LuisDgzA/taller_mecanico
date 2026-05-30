@@ -65,7 +65,7 @@ export default async function NuevoServicioPage({
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.5fr]">
           {/* Vehicle / client summary */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
                 Vehículo seleccionado
@@ -128,6 +128,7 @@ export default async function NuevoServicioPage({
               </p>
               <input
                 accept="image/jpeg,image/png,image/webp"
+                capture="environment"
                 className="mt-4 w-full rounded-2xl border border-dashed border-slate-300 p-3 text-sm text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-slate-950 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                 multiple
                 name="imagenes"
