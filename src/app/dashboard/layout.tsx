@@ -6,6 +6,7 @@ import { UserRound } from "lucide-react";
 import { logoutAction } from "@/actions/auth";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { dashboardNavItems } from "@/components/dashboard/navigation-items";
+import { OfflineGuard } from "@/components/dashboard/offline-guard";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -92,7 +93,7 @@ export default async function DashboardLayout({
           </header>
 
           <div className="flex min-h-[80vh] flex-1 flex-col rounded-[2rem] border border-slate-900/10 bg-white/90 shadow-[0_30px_70px_-45px_rgba(15,23,42,0.35)]">
-            {children}
+            <OfflineGuard>{children}</OfflineGuard>
           </div>
         </div>
       </div>
