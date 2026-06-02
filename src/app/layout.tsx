@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 
 import { AppFeedbackToaster } from "@/components/app-feedback-toaster";
 
@@ -40,7 +41,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
-        <AppFeedbackToaster />
+        <Suspense>
+          <AppFeedbackToaster />
+        </Suspense>
       </body>
     </html>
   );
