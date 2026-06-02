@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { getSupabaseEnv } from "@/lib/supabase/config";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
   const { supabaseUrl, supabaseAnonKey } = getSupabaseEnv();
 
