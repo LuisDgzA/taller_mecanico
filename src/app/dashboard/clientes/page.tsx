@@ -1,7 +1,9 @@
 import Link from "next/link";
 
-import { createClienteAction, deleteClienteAction, updateClienteAction } from "@/actions/clientes";
+import { deleteClienteAction, updateClienteAction } from "@/actions/clientes";
+import { CollapsibleCard } from "@/components/dashboard/collapsible-card";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
+import { CreateClienteForm } from "@/components/dashboard/create-cliente-form";
 import { Pagination } from "@/components/dashboard/pagination";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
@@ -64,13 +66,10 @@ export default async function ClientesPage({
   return (
     <main className="flex-1 px-6 py-8 sm:px-8">
       <div className="flex flex-col gap-3 border-b border-slate-200 pb-6">
-        <p className="text-sm uppercase tracking-[0.25em] text-orange-700/70">
-          F-04
-        </p>
+        
         <h1 className="text-3xl font-semibold tracking-tight">Clientes</h1>
         <p className="max-w-3xl text-sm leading-6 text-slate-600">
-          Gestiona la base de clientes, entra al detalle para ver sus vehículos
-          y deja preparada la información para la captura de servicios.
+          Gestiona la base de clientes y consulta sus vehículos
         </p>
       </div>
 
@@ -87,80 +86,27 @@ export default async function ClientesPage({
       ) : null}
 
       <section className="mt-8 grid gap-5 xl:grid-cols-[0.72fr_1.28fr]">
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="border-b border-slate-200 pb-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-              Agregar cliente
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Registro rápido
-            </h2>
-          </div>
+        <CollapsibleCard defaultOpen={false} label="Agregar cliente" title="Registro rápido">
+          <CreateClienteForm />
+        </CollapsibleCard>
 
-          <form action={createClienteAction} className="mt-5 space-y-4">
-            <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
-            <label className="block text-sm font-medium text-slate-700">
-              Nombre
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="nombre"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Correo
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="correo"
-                type="email"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Teléfono
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="telefono"
-              />
-            </label>
-            <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              El nombre sigue siendo opcional, pero conviene capturarlo para que la búsqueda funcione mejor.
-            </p>
+        <CollapsibleCard label="Base de clientes" title={`${total} cliente${total === 1 ? "" : "s"}`}>
+          <form className="mb-4 flex w-full flex-col gap-3 sm:flex-row">
+            <input
+              className="h-11 flex-1 rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+              defaultValue={query}
+              name="q"
+              placeholder="Buscar por nombre, correo o teléfono"
+            />
             <button
-              className="h-11 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="h-11 rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
               type="submit"
             >
-              Crear cliente
+              Buscar
             </button>
           </form>
-        </div>
 
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                Base de clientes
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                {total} cliente{total === 1 ? "" : "s"}
-              </h2>
-            </div>
-
-            <form className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
-              <input
-                className="h-11 flex-1 rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                defaultValue={query}
-                name="q"
-                placeholder="Buscar por nombre, correo o telefono"
-              />
-              <button
-                className="h-11 rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
-                type="submit"
-              >
-                Buscar
-              </button>
-            </form>
-          </div>
-
-          <div className="mt-6 space-y-4">
+          <div className="space-y-4">
             {clientes.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
                 <p className="font-medium text-slate-700">
@@ -193,7 +139,7 @@ export default async function ClientesPage({
                     </Link>
                   </div>
 
-                  <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_auto]">
+                  <div className="mt-4 hidden gap-4 xl:grid xl:grid-cols-[1fr_auto]">
                     <form action={updateClienteAction} className="grid gap-3 md:grid-cols-3">
                       <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
                       <input name="id" type="hidden" value={cliente.id} />
@@ -203,6 +149,7 @@ export default async function ClientesPage({
                           className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                           defaultValue={cliente.nombre ?? ""}
                           name="nombre"
+                          required
                         />
                       </label>
                       <label className="text-sm font-medium text-slate-700">
@@ -249,7 +196,7 @@ export default async function ClientesPage({
           </div>
 
           <Pagination buildHref={buildHref} page={page} pageCount={pageCount} />
-        </div>
+        </CollapsibleCard>
       </section>
     </main>
   );

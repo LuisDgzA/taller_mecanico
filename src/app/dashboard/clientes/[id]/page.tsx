@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { deleteClienteAction, updateClienteAction } from "@/actions/clientes";
 import { createVehiculoAction, deleteVehiculoAction, updateVehiculoAction } from "@/actions/vehiculos";
+import { CollapsibleCard } from "@/components/dashboard/collapsible-card";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { PlateLookupCard } from "@/components/dashboard/plate-lookup-card";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
@@ -77,9 +79,6 @@ export default async function ClienteDetailPage({
     <main className="flex-1 px-6 py-8 sm:px-8">
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.25em] text-orange-700/70">
-            F-05
-          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             {cliente.nombre?.trim() || "Cliente sin nombre"}
           </h1>
@@ -89,9 +88,10 @@ export default async function ClienteDetailPage({
           </p>
         </div>
         <Link
-          className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:border-slate-950"
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:border-slate-950"
           href="/dashboard/clientes"
         >
+          <ArrowLeft className="size-4" />
           Volver a clientes
         </Link>
       </div>
@@ -110,17 +110,8 @@ export default async function ClienteDetailPage({
 
       <section className="mt-8 grid gap-5 lg:grid-cols-[0.88fr_1.12fr]">
         <div className="space-y-5">
-          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="border-b border-slate-200 pb-4">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                Datos del cliente
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                Ficha general
-              </h2>
-            </div>
-
-            <form action={updateClienteAction} className="mt-5 space-y-4">
+          <CollapsibleCard defaultOpen={false} label="Datos del cliente" title="Ficha general">
+            <form action={updateClienteAction} className="space-y-4">
               <input
                 name="redirectTo"
                 type="hidden"
@@ -133,6 +124,7 @@ export default async function ClienteDetailPage({
                   className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                   defaultValue={cliente.nombre ?? ""}
                   name="nombre"
+                  required
                 />
               </label>
               <label className="block text-sm font-medium text-slate-700">
@@ -172,28 +164,18 @@ export default async function ClienteDetailPage({
                 Eliminar cliente y sus vehículos
               </ConfirmSubmitButton>
             </form>
-          </div>
+          </CollapsibleCard>
 
           <PlateLookupCard />
         </div>
 
         <div className="space-y-5">
-          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                  Vehículos del cliente
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                  {vehicleList.length} vehículo{vehicleList.length === 1 ? "" : "s"}
-                </h2>
-              </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Servicios asociados detectados: {serviciosCount ?? 0}
-              </div>
-            </div>
+          <CollapsibleCard label="Vehículos del cliente" title={`${vehicleList.length} vehículo${vehicleList.length === 1 ? "" : "s"}`}>
+            <p className="mb-4 inline-block rounded-2xl bg-slate-50 px-4 py-2 text-sm text-slate-600">
+              Servicios asociados detectados: {serviciosCount ?? 0}
+            </p>
 
-            <form action={createVehiculoAction} className="mt-5 grid gap-3 md:grid-cols-2">
+            <form action={createVehiculoAction} className="grid gap-3 md:grid-cols-2">
               <input
                 name="redirectTo"
                 type="hidden"
@@ -446,7 +428,7 @@ export default async function ClienteDetailPage({
                 ))
               )}
             </div>
-          </div>
+          </CollapsibleCard>
         </div>
       </section>
     </main>

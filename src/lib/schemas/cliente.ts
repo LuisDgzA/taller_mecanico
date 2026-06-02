@@ -6,7 +6,7 @@ const emptyToNull = (value: string) => {
 };
 
 export const CreateClienteSchema = z.object({
-  nombre: z.preprocess((value) => emptyToNull(String(value ?? "")), z.string().max(100).nullable()),
+  nombre: z.string().trim().min(1, "El nombre es obligatorio.").max(100),
   correo: z.preprocess(
     (value) => emptyToNull(String(value ?? "")),
     z.email("Ingresa un correo valido.").max(100).nullable(),

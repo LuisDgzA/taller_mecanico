@@ -67,13 +67,9 @@ export default async function UsuariosPage({
   return (
     <main className="flex-1 px-6 py-8 sm:px-8">
       <div className="flex flex-col gap-3 border-b border-slate-200 pb-6">
-        <p className="text-sm uppercase tracking-[0.25em] text-orange-700/70">
-          F-03
-        </p>
         <h1 className="text-3xl font-semibold tracking-tight">Usuarios</h1>
         <p className="max-w-3xl text-sm leading-6 text-slate-600">
-          Administra al personal interno y mantén sincronizados los datos de
-          Supabase Auth con la tabla `public.usuarios`.
+          Consulta los usuarios registrados y mantén su información sincronizada.
         </p>
       </div>
 

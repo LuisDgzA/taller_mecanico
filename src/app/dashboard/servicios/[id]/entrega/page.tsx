@@ -66,9 +66,6 @@ export default async function EntregaPage({
     <main className="flex-1 px-6 py-8 sm:px-8">
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.25em] text-orange-700/70">
-            F-09
-          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             Entrega de vehículo
           </h1>

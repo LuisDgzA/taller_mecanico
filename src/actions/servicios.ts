@@ -58,9 +58,13 @@ export async function initServicioStep1Action(formData: FormData) {
   if (rawClienteId) {
     finalClienteId = Number(rawClienteId);
   } else {
-    const nombre = String(formData.get("nombre") ?? "").trim() || null;
+    const nombre = String(formData.get("nombre") ?? "").trim();
     const correo = String(formData.get("correo") ?? "").trim() || null;
     const telefono = String(formData.get("telefono") ?? "").trim() || null;
+
+    if (!nombre) {
+      redirect(buildActionRedirect(errorBase, { error: "El nombre del cliente es obligatorio." }));
+    }
 
     const { data: newCliente, error: clienteError } = await supabase
       .from("clientes")

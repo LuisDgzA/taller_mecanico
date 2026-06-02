@@ -406,9 +406,6 @@ export default async function ServicioDetailPage({
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.25em] text-orange-700/70">
-            F-08
-          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             Servicio #{servicio.id}
           </h1>

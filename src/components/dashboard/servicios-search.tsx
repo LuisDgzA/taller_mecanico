@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Search } from "lucide-react";
 
 const STATUS_TABS = [
   { value: "", label: "Todos" },
@@ -32,10 +33,10 @@ export function ServiciosSearch({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-1 gap-2">
         <input
-          className="h-12 flex-1 rounded-2xl border border-slate-300 px-4 text-sm outline-none transition focus:border-slate-950"
+          className="h-11 flex-1 rounded-2xl border border-slate-300 px-4 text-sm outline-none transition focus:border-slate-950"
           placeholder="Buscar por placa o descripción…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -44,33 +45,26 @@ export function ServiciosSearch({
           }}
         />
         <button
-          className="h-12 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400 sm:min-w-32"
+          className="flex h-11 shrink-0 items-center gap-2 rounded-2xl border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:border-slate-950 hover:text-slate-950 disabled:opacity-50"
           disabled={isPending}
           type="button"
           onClick={() => navigate(search, defaultStatus)}
         >
-          Buscar
+          <Search className="size-4" />
+          <span className="hidden sm:inline">Buscar</span>
         </button>
       </div>
-
-      <div className="-mx-1 overflow-x-auto px-1 pb-1">
-        <div className="flex min-w-max gap-2">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              className={`snap-start whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-medium transition ${
-                defaultStatus === tab.value
-                  ? "bg-slate-950 text-white"
-                  : "border border-slate-300 bg-white hover:border-slate-950"
-              }`}
-              type="button"
-              onClick={() => navigate(search, tab.value)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <select
+        className="h-11 rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-950"
+        value={defaultStatus}
+        onChange={(e) => navigate(search, e.target.value)}
+      >
+        {STATUS_TABS.map((tab) => (
+          <option key={tab.value} value={tab.value}>
+            {tab.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

@@ -502,6 +502,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
               <input
                 className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
                 name="nombre"
+                required
               />
             </label>
             <label className="text-sm font-medium text-slate-700">

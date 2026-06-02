@@ -7,7 +7,29 @@ import { buildActionRedirect, getRedirectTarget } from "@/lib/action-feedback";
 import { DeleteClienteSchema, CreateClienteSchema, UpdateClienteSchema } from "@/lib/schemas/cliente";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
-export async function createClienteAction(formData: FormData) {
+type DuplicateClienteMatch = {
+  id: number;
+  nombre: string | null;
+  correo: string | null;
+  telefono: string | null;
+};
+
+export type CreateClienteActionState = {
+  duplicateMatches?: DuplicateClienteMatch[];
+  duplicateName?: string;
+  error?: string;
+};
+
+const normalizeName = (value: string) =>
+  value
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("es-MX");
+
+export async function createClienteAction(
+  _: CreateClienteActionState,
+  formData: FormData,
+): Promise<CreateClienteActionState> {
   const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
   const parsed = CreateClienteSchema.safeParse({
     nombre: formData.get("nombre"),
@@ -16,18 +38,43 @@ export async function createClienteAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(
-      buildActionRedirect(redirectTo, {
-        error: parsed.error.issues[0]?.message ?? "No se pudo crear el cliente.",
-      }),
-    );
+    return {
+      error: parsed.error.issues[0]?.message ?? "No se pudo crear el cliente.",
+    };
   }
 
   const supabase = await createSupabaseServerActionClient();
+  const duplicateConfirmed = String(formData.get("confirmDuplicate") ?? "").trim() === "1";
+  const normalizedName = normalizeName(parsed.data.nombre);
+
+  if (!duplicateConfirmed) {
+    const { data: possibleDuplicates, error: duplicateError } = await supabase
+      .from("clientes")
+      .select("id, nombre, correo, telefono")
+      .ilike("nombre", parsed.data.nombre)
+      .limit(5)
+      .returns<DuplicateClienteMatch[]>();
+
+    if (duplicateError) {
+      return { error: duplicateError.message };
+    }
+
+    const exactDuplicates = (possibleDuplicates ?? []).filter(
+      (cliente) => cliente.nombre && normalizeName(cliente.nombre) === normalizedName,
+    );
+
+    if (exactDuplicates.length > 0) {
+      return {
+        duplicateMatches: exactDuplicates,
+        duplicateName: parsed.data.nombre,
+      };
+    }
+  }
+
   const { error } = await supabase.from("clientes").insert(parsed.data);
 
   if (error) {
-    redirect(buildActionRedirect(redirectTo, { error: error.message }));
+    return { error: error.message };
   }
 
   revalidatePath("/dashboard/clientes");
