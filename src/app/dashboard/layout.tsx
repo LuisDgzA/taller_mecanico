@@ -6,6 +6,7 @@ import { UserRound } from "lucide-react";
 import { logoutAction } from "@/actions/auth";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { dashboardNavItems } from "@/components/dashboard/navigation-items";
+import { InstallPwaButton } from "@/components/dashboard/install-pwa-button";
 import { OfflineGuard } from "@/components/dashboard/offline-guard";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -56,7 +57,11 @@ export default async function DashboardLayout({
             })}
           </nav>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="mt-auto pt-4">
+            <InstallPwaButton />
+          </div>
+
+          <div className="mt-2 rounded-2xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Sesión
             </p>
@@ -81,7 +86,8 @@ export default async function DashboardLayout({
               </p>
               <p className="mt-1 text-sm font-semibold">Panel privado</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <InstallPwaButton mobile />
               <div className="text-right">
                 <p className="text-sm font-medium">{staff.nombre}</p>
                 <p className="text-xs text-slate-300">Personal activo</p>
