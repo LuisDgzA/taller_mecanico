@@ -1,5 +1,7 @@
 "use server";
 
+import sharp from "sharp";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -24,10 +26,15 @@ async function uploadImages(
 
   for (let i = 0; i < Math.min(files.length, maxCount); i++) {
     const file = files[i];
-    const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase();
-    const path = `${recordId}/imagen_${i + 1}.${ext}`;
+    const path = `${recordId}/imagen_${i + 1}.webp`;
 
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+    const arrayBuffer = await file.arrayBuffer();
+    const webpBuffer = await sharp(Buffer.from(arrayBuffer)).webp({ quality: 80 }).toBuffer();
+
+    const { error } = await supabase.storage.from(bucket).upload(path, webpBuffer, {
+      upsert: true,
+      contentType: "image/webp",
+    });
 
     if (!error) {
       result[fieldNames[i]] = path;
