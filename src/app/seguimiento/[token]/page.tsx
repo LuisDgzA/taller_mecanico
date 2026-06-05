@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
+import { RealtimeRefresh } from "./realtime-refresh";
+
 type TrackingServicio = {
   id: number;
   status: number;
@@ -116,6 +118,7 @@ export default async function SeguimientoPage({
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8f5ef_0%,#efe5d7_100%)]">
+      <RealtimeRefresh servicioId={servicio.id} />
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
         {/* Header */}
         <div className="mb-8 text-center">
