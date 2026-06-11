@@ -381,8 +381,7 @@ export default async function ServicioDetailPage({
                 Máximo 4 · JPG, PNG o WebP
               </p>
               <input
-                accept="image/jpeg,image/png,image/webp"
-                capture="environment"
+                accept="image/*"
                 className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 p-3 text-sm text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-slate-950 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                 multiple
                 name="imagenes"
