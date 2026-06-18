@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { initServicioStep1Action } from "@/actions/servicios";
+import { ActionButton } from "@/components/ui/action-button";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -528,16 +529,12 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
       {(resolvedVehiculo ||
         (selectedCliente && selectedVehiculoId !== null) ||
         (!selectedCliente && !plateResult?.found)) ? (
-        <button
-          className="min-h-[52px] w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
-          disabled={
-            // Client selected but hasn't picked/chosen a vehicle option yet
-            !!(selectedCliente && selectedVehiculoId === null)
-          }
-          type="submit"
+        <ActionButton
+          className="min-h-13 w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
+          disabled={!!(selectedCliente && selectedVehiculoId === null)}
         >
           Continuar →
-        </button>
+        </ActionButton>
       ) : null}
     </form>
   );

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { createBitacoraAction, deleteBitacoraAction } from "@/actions/bitacoras";
 import { updateServicioStatusAction } from "@/actions/servicios";
+import { ActionButton } from "@/components/ui/action-button";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { ImageViewer } from "@/components/dashboard/image-viewer";
@@ -221,12 +222,9 @@ export default async function ServicioDetailPage({
           <form action={updateServicioStatusAction} className="mt-4">
             <input name="id" type="hidden" value={servicio.id} />
             <input name="status" type="hidden" value={nextStatus.value} />
-            <button
-              className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium transition hover:border-slate-950 hover:bg-slate-50"
-              type="submit"
-            >
+            <ActionButton className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium transition hover:border-slate-950 hover:bg-slate-50 disabled:opacity-70">
               {nextStatus.label}
-            </button>
+            </ActionButton>
           </form>
         ) : null}
 
@@ -388,12 +386,9 @@ export default async function ServicioDetailPage({
                 type="file"
               />
             </label>
-            <button
-              className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800"
-              type="submit"
-            >
+            <ActionButton className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
               Agregar nota
-            </button>
+            </ActionButton>
           </form>
         </div>
       ) : null}

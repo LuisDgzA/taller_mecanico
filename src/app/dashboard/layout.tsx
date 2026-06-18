@@ -5,6 +5,7 @@ import { UserRound } from "lucide-react";
 
 import { logoutAction } from "@/actions/auth";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
+import { ActionButton } from "@/components/ui/action-button";
 import { dashboardNavItems } from "@/components/dashboard/navigation-items";
 import { InstallPwaButton } from "@/components/dashboard/install-pwa-button";
 import { OfflineGuard } from "@/components/dashboard/offline-guard";
@@ -68,12 +69,9 @@ export default async function DashboardLayout({
             <p className="mt-2 text-sm font-medium">{staff.nombre}</p>
             <p className="mt-1 text-sm text-slate-300">{staff.correo}</p>
             <form action={logoutAction} className="mt-4">
-              <button
-                className="w-full rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-400"
-                type="submit"
-              >
+              <ActionButton className="w-full rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-400 disabled:opacity-70">
                 Cerrar sesión
-              </button>
+              </ActionButton>
             </form>
           </div>
         </aside>

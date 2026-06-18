@@ -1,6 +1,7 @@
 import { createUsuarioAction, toggleUsuarioStatusAction, updateUsuarioAction } from "@/actions/usuarios";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
+import { ActionButton } from "@/components/ui/action-button";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
@@ -139,12 +140,9 @@ export default async function UsuariosPage({
                 type="password"
               />
             </label>
-            <button
-              className="h-11 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800"
-              type="submit"
-            >
+            <ActionButton className="h-11 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
               Crear usuario
-            </button>
+            </ActionButton>
           </form>
         </div>
 
@@ -243,12 +241,9 @@ export default async function UsuariosPage({
                           />
                         </label>
                         <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-                          <button
-                            className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-                            type="submit"
-                          >
+                          <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
                             Guardar cambios
-                          </button>
+                          </ActionButton>
                           {isCurrentUser ? (
                             <p className="text-xs uppercase tracking-[0.2em] text-amber-700">
                               Tu propio correo queda bloqueado aquí para evitar lockout.
@@ -262,16 +257,15 @@ export default async function UsuariosPage({
                         <input name="id" type="hidden" value={usuario.id} />
                         <input name="authId" type="hidden" value={usuario.auth_id ?? ""} />
                         <input name="status" type="hidden" value={usuario.status} />
-                        <button
-                          className={`h-11 rounded-2xl px-4 text-sm font-semibold transition ${
+                        <ActionButton
+                          className={`h-11 rounded-2xl px-4 text-sm font-semibold transition disabled:opacity-70 ${
                             usuario.status === 1
                               ? "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
                               : "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                           }`}
-                          type="submit"
                         >
                           {usuario.status === 1 ? "Desactivar" : "Activar"}
-                        </button>
+                        </ActionButton>
                       </form>
                     </div>
                   </div>
