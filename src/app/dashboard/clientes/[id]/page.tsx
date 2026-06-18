@@ -7,6 +7,7 @@ import { createVehiculoAction, deleteVehiculoAction, updateVehiculoAction } from
 import { CollapsibleCard } from "@/components/dashboard/collapsible-card";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { PlateLookupCard } from "@/components/dashboard/plate-lookup-card";
+import { ActionButton } from "@/components/ui/action-button";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type ClienteDetail = {
@@ -145,12 +146,9 @@ export default async function ClienteDetailPage({
                 />
               </label>
               <div className="flex flex-wrap gap-3">
-                <button
-                  className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-                  type="submit"
-                >
+                <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
                   Guardar cliente
-                </button>
+                </ActionButton>
               </div>
             </form>
 
@@ -222,12 +220,9 @@ export default async function ClienteDetailPage({
                 />
               </label>
               <div className="md:col-span-2">
-                <button
-                  className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-                  type="submit"
-                >
+                <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
                   Agregar vehículo
-                </button>
+                </ActionButton>
               </div>
             </form>
 
@@ -306,12 +301,9 @@ export default async function ClienteDetailPage({
                             />
                           </label>
                           <div className="md:col-span-2 flex flex-wrap gap-2">
-                            <button
-                              className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-                              type="submit"
-                            >
+                            <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
                               Guardar vehículo
-                            </button>
+                            </ActionButton>
                             <Link
                               className="inline-flex h-11 items-center rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
                               href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${vehiculo.id}`}

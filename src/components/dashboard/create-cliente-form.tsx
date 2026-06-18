@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 import {
   createClienteAction,
@@ -83,11 +84,18 @@ export function CreateClienteForm() {
         ) : null}
 
         <button
-          className="h-11 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           disabled={pending}
           type="submit"
         >
-          {pending ? "Creando..." : "Crear cliente"}
+          {pending ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Creando...
+            </>
+          ) : (
+            "Crear cliente"
+          )}
         </button>
       </form>
 

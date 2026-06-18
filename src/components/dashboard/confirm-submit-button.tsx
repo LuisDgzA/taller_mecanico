@@ -1,6 +1,8 @@
 "use client";
 
 import type { ButtonHTMLAttributes, MouseEvent } from "react";
+import { Loader2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 type ConfirmSubmitButtonProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -12,8 +14,11 @@ type ConfirmSubmitButtonProps = Omit<
 export function ConfirmSubmitButton({
   confirmMessage,
   onClick,
+  children,
   ...props
 }: ConfirmSubmitButtonProps) {
+  const { pending } = useFormStatus();
+
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     onClick?.(event);
 
@@ -29,5 +34,16 @@ export function ConfirmSubmitButton({
     event.currentTarget.form?.requestSubmit();
   };
 
-  return <button {...props} type="button" onClick={handleClick} />;
+  return (
+    <button {...props} disabled={pending || props.disabled} type="button" onClick={handleClick}>
+      {pending ? (
+        <span className="inline-flex items-center gap-2">
+          <Loader2 className="size-4 animate-spin" />
+          {children}
+        </span>
+      ) : (
+        children
+      )}
+    </button>
+  );
 }

@@ -5,6 +5,7 @@ import { CollapsibleCard } from "@/components/dashboard/collapsible-card";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { CreateClienteForm } from "@/components/dashboard/create-cliente-form";
 import { Pagination } from "@/components/dashboard/pagination";
+import { ActionButton } from "@/components/ui/action-button";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 const PAGE_SIZE = 10;
@@ -170,12 +171,9 @@ export default async function ClientesPage({
                         />
                       </label>
                       <div className="md:col-span-3">
-                        <button
-                          className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-                          type="submit"
-                        >
+                        <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
                           Guardar cambios
-                        </button>
+                        </ActionButton>
                       </div>
                     </form>
 

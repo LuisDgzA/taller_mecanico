@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { createServicioAction } from "@/actions/servicios";
 import { NuevoServicioStep1Form } from "@/components/dashboard/nuevo-servicio-step1";
+import { ActionButton } from "@/components/ui/action-button";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type VehiculoStep2 = {
@@ -132,12 +133,9 @@ export default async function NuevoServicioPage({
               />
             </div>
 
-            <button
-              className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800"
-              type="submit"
-            >
+            <ActionButton className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
               Registrar servicio
-            </button>
+            </ActionButton>
           </form>
         </div>
       </main>
