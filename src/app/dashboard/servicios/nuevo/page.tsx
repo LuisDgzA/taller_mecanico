@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { createServicioAction } from "@/actions/servicios";
 import { NuevoServicioStep1Form } from "@/components/dashboard/nuevo-servicio-step1";
 import { ActionButton } from "@/components/ui/action-button";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type VehiculoStep2 = {
@@ -21,6 +22,12 @@ export default async function NuevoServicioPage({
 }: {
   searchParams: Promise<{ step?: string; vehiculoId?: string; error?: string }>;
 }) {
+  const canAddServicios = await currentUserHasPermission(PERMISOS.SERVICIOS_ADD);
+
+  if (!canAddServicios) {
+    redirect("/dashboard/servicios?error=No+tienes+permiso+para+crear+servicios.");
+  }
+
   const { step, vehiculoId, error } = await searchParams;
 
   // ── Step 2 ──────────────────────────────────────────────────

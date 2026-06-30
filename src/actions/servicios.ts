@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 import { buildActionRedirect } from "@/lib/action-feedback";
 import { requireCurrentStaffProfile } from "@/lib/current-staff";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { CreateServicioSchema, UpdateServicioStatusSchema } from "@/lib/schemas/servicio";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
@@ -45,6 +46,12 @@ async function uploadImages(
 }
 
 export async function initServicioStep1Action(formData: FormData) {
+  const canAddServicios = await currentUserHasPermission(PERMISOS.SERVICIOS_ADD);
+
+  if (!canAddServicios) {
+    redirect(buildActionRedirect(NUEVO, { error: "No tienes permiso para crear servicios." }));
+  }
+
   const rawVehiculoId = String(formData.get("vehiculoId") ?? "").trim();
 
   // Existing vehicle selected — skip directly to step 2
@@ -120,6 +127,16 @@ export async function initServicioStep1Action(formData: FormData) {
 }
 
 export async function createServicioAction(formData: FormData) {
+  const canAddServicios = await currentUserHasPermission(PERMISOS.SERVICIOS_ADD);
+
+  if (!canAddServicios) {
+    redirect(
+      buildActionRedirect(`${NUEVO}?step=2&vehiculoId=${formData.get("vehiculoId")}`, {
+        error: "No tienes permiso para crear servicios.",
+      }),
+    );
+  }
+
   const staff = await requireCurrentStaffProfile();
 
   const parsed = CreateServicioSchema.safeParse({
@@ -223,6 +240,16 @@ export async function updateServicioStatusAction(formData: FormData) {
 }
 
 export async function entregarServicioAction(formData: FormData) {
+  const canDeliverServicio = await currentUserHasPermission(PERMISOS.SERVICIOS_ENTREGAR_V);
+
+  if (!canDeliverServicio) {
+    redirect(
+      buildActionRedirect(`${BASE}/${formData.get("servicioId")}`, {
+        error: "No tienes permiso para entregar vehículos.",
+      }),
+    );
+  }
+
   const staff = await requireCurrentStaffProfile();
 
   const servicioId = Number(formData.get("servicioId"));

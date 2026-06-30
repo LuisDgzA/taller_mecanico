@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { ServiceDetailTabs } from "@/components/dashboard/service-detail-tabs";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type ServicioDetail = {
@@ -105,7 +106,12 @@ export default async function ServicioDetailPage({
   if (!Number.isFinite(servicioId) || servicioId <= 0) notFound();
 
   const supabase = await createSupabaseServerComponentClient();
-  const staff = await getCurrentStaffProfile();
+  const [staff, canAddNota, canDeleteNota, canEntregarVehiculo] = await Promise.all([
+    getCurrentStaffProfile(),
+    currentUserHasPermission(PERMISOS.SERVICIOS_ADD_NOTA),
+    currentUserHasPermission(PERMISOS.SERVICIOS_DEL_NOTA),
+    currentUserHasPermission(PERMISOS.SERVICIOS_ENTREGAR_V),
+  ]);
 
   const [{ data: servicio }, { data: bitacorasRaw }] = await Promise.all([
     supabase
@@ -170,7 +176,7 @@ export default async function ServicioDetailPage({
             </ActionButton>
           </form>
         ) : null}
-        {servicio.status === 2 ? (
+        {servicio.status === 2 && canEntregarVehiculo ? (
           <Link
             className="flex h-9 flex-1 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-on-primary"
             href={`/dashboard/servicios/${servicio.id}/entrega`}
@@ -326,7 +332,7 @@ export default async function ServicioDetailPage({
                     ) : null}
                   </div>
 
-                  {isOwn ? (
+                  {isOwn && canDeleteNota ? (
                     <form action={deleteBitacoraAction} className="mt-1.5">
                       <input name="id" type="hidden" value={entry.id} />
                       <input name="servicioId" type="hidden" value={servicio.id} />
@@ -356,7 +362,7 @@ export default async function ServicioDetailPage({
       )}
 
       {/* Add note form */}
-      {servicio.status !== 3 ? (
+      {servicio.status !== 3 && canAddNota ? (
         <>
           <SectionHeader>Agregar nota</SectionHeader>
           <form action={createBitacoraAction} className="space-y-3 px-4 py-4">

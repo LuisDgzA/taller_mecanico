@@ -5,10 +5,21 @@ import { redirect } from "next/navigation";
 
 import { buildActionRedirect } from "@/lib/action-feedback";
 import { requireCurrentStaffProfile } from "@/lib/current-staff";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { CreateBitacoraSchema, DeleteBitacoraSchema } from "@/lib/schemas/bitacora";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
 export async function createBitacoraAction(formData: FormData) {
+  const canAddNotas = await currentUserHasPermission(PERMISOS.SERVICIOS_ADD_NOTA);
+
+  if (!canAddNotas) {
+    redirect(
+      buildActionRedirect(`/dashboard/servicios/${formData.get("servicioId")}`, {
+        error: "No tienes permiso para agregar notas de servicio.",
+      }),
+    );
+  }
+
   const staff = await requireCurrentStaffProfile();
 
   const parsed = CreateBitacoraSchema.safeParse({
@@ -76,6 +87,16 @@ export async function createBitacoraAction(formData: FormData) {
 }
 
 export async function deleteBitacoraAction(formData: FormData) {
+  const canDeleteNotas = await currentUserHasPermission(PERMISOS.SERVICIOS_DEL_NOTA);
+
+  if (!canDeleteNotas) {
+    redirect(
+      buildActionRedirect(`/dashboard/servicios/${formData.get("servicioId")}`, {
+        error: "No tienes permiso para eliminar notas de servicio.",
+      }),
+    );
+  }
+
   const staff = await requireCurrentStaffProfile();
 
   const parsed = DeleteBitacoraSchema.safeParse({

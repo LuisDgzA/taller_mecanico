@@ -9,6 +9,7 @@ import { dashboardNavItems } from "./navigation-items";
 
 type BottomNavProps = {
   className?: string;
+  canViewServicios?: boolean;
   canViewClientes?: boolean;
   canViewUsuarios?: boolean;
   canViewPermisos?: boolean;
@@ -23,12 +24,17 @@ function isActivePath(pathname: string, href: string) {
 
 export function BottomNav({
   className,
+  canViewServicios = true,
   canViewClientes = true,
   canViewUsuarios = true,
   canViewPermisos = true,
 }: BottomNavProps) {
   const pathname = usePathname();
   const visibleItems = dashboardNavItems.filter((item) => {
+    if (item.href === "/dashboard/servicios" && !canViewServicios) {
+      return false;
+    }
+
     if (item.href === "/dashboard/clientes" && !canViewClientes) {
       return false;
     }

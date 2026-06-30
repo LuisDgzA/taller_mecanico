@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
 import { ServiciosSearch } from "@/components/dashboard/servicios-search";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type ServicioRow = {
@@ -39,6 +40,7 @@ export default async function ServiciosPage({
 }: {
   searchParams: Promise<{ search?: string; status?: string }>;
 }) {
+  const canAddServicios = await currentUserHasPermission(PERMISOS.SERVICIOS_ADD);
   const { search = "", status = "" } = await searchParams;
 
   const supabase = await createSupabaseServerComponentClient();
@@ -144,13 +146,15 @@ export default async function ServiciosPage({
         </div>
       )}
 
-      <Link
-        href="/dashboard/servicios/nuevo"
-        className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
-        aria-label="Agregar servicio"
-      >
-        <Plus className="size-6" />
-      </Link>
+      {canAddServicios ? (
+        <Link
+          href="/dashboard/servicios/nuevo"
+          className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
+          aria-label="Agregar servicio"
+        >
+          <Plus className="size-6" />
+        </Link>
+      ) : null}
     </>
   );
 }

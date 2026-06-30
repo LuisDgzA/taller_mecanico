@@ -50,14 +50,24 @@ function formatRelativeDate(dateString: string) {
 }
 
 export default async function DashboardPage() {
-  const [staff, supabase, canViewUsuarios, canViewPermisos] = await Promise.all([
+  const [staff, supabase, canViewServicios, canAddServicios, canViewUsuarios, canViewPermisos] = await Promise.all([
     getCurrentStaffProfile(),
     createSupabaseServerComponentClient(),
+    currentUserHasPermission(PERMISOS.SERVICIOS_VER),
+    currentUserHasPermission(PERMISOS.SERVICIOS_ADD),
     currentUserHasPermission(PERMISOS.USUARIOS_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_PERMISOS),
   ]);
 
   const visibleQuickActions = quickActions.filter((action) => {
+    if (action.href === "/dashboard/servicios" && !canViewServicios) {
+      return false;
+    }
+
+    if (action.href === "/dashboard/servicios/nuevo" && !canAddServicios) {
+      return false;
+    }
+
     if (action.href === "/dashboard/usuarios" && !canViewUsuarios) {
       return false;
     }
@@ -69,16 +79,18 @@ export default async function DashboardPage() {
     return true;
   });
 
-  const { data } = await supabase
-    .from("servicios")
-    .select(
-      "id, descripcion, status, fecha_inicio, vehiculo:vehiculos(placa, marca, modelo, cliente:clientes(nombre))",
-    )
-    .order("fecha_inicio", { ascending: false })
-    .limit(5)
-    .returns<RecentServicio[]>();
-
-  const recentServices = data ?? [];
+  const recentServices = canViewServicios
+    ? (
+      await supabase
+        .from("servicios")
+        .select(
+          "id, descripcion, status, fecha_inicio, vehiculo:vehiculos(placa, marca, modelo, cliente:clientes(nombre))",
+        )
+        .order("fecha_inicio", { ascending: false })
+        .limit(5)
+        .returns<RecentServicio[]>()
+    ).data ?? []
+    : [];
 
   return (
     <>
@@ -117,47 +129,51 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent activity */}
-      <div className="mt-2 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-        Actividad reciente
-      </div>
+      {canViewServicios ? (
+        <>
+          <div className="mt-2 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            Actividad reciente
+          </div>
 
-      {recentServices.length === 0 ? (
-        <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
-          No hay servicios registrados aún.
-        </div>
-      ) : (
-        <div className="divide-y divide-outline-variant">
-          {recentServices.map((s) => (
-            <Link
-              key={s.id}
-              href={`/dashboard/servicios/${s.id}`}
-              className="flex flex-col gap-1.5 px-4 py-3 transition-colors active:bg-surface-container-low"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
-                    {s.vehiculo?.placa ?? "—"}
-                  </span>
-                  <span className="truncate text-sm font-medium text-on-surface">
-                    {[s.vehiculo?.marca, s.vehiculo?.modelo]
-                      .filter(Boolean)
-                      .join(" ") || "Sin vehículo"}
-                  </span>
-                </div>
-                <ServicioStatusBadge status={s.status} />
-              </div>
-              {s.vehiculo?.cliente?.nombre ? (
-                <p className="text-xs text-on-surface-variant">
-                  {s.vehiculo.cliente.nombre}
-                </p>
-              ) : null}
-              <p className="text-right text-[10px] text-on-surface-variant">
-                {formatRelativeDate(s.fecha_inicio)}
-              </p>
-            </Link>
-          ))}
-        </div>
-      )}
+          {recentServices.length === 0 ? (
+            <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
+              No hay servicios registrados aún.
+            </div>
+          ) : (
+            <div className="divide-y divide-outline-variant">
+              {recentServices.map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/dashboard/servicios/${s.id}`}
+                  className="flex flex-col gap-1.5 px-4 py-3 transition-colors active:bg-surface-container-low"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
+                        {s.vehiculo?.placa ?? "—"}
+                      </span>
+                      <span className="truncate text-sm font-medium text-on-surface">
+                        {[s.vehiculo?.marca, s.vehiculo?.modelo]
+                          .filter(Boolean)
+                          .join(" ") || "Sin vehículo"}
+                      </span>
+                    </div>
+                    <ServicioStatusBadge status={s.status} />
+                  </div>
+                  {s.vehiculo?.cliente?.nombre ? (
+                    <p className="text-xs text-on-surface-variant">
+                      {s.vehiculo.cliente.nombre}
+                    </p>
+                  ) : null}
+                  <p className="text-right text-[10px] text-on-surface-variant">
+                    {formatRelativeDate(s.fecha_inicio)}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
+      ) : null}
 
       {/* Session */}
       <div className="mt-4 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">

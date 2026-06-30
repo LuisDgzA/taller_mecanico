@@ -54,12 +54,13 @@ export default async function ClienteDetailPage({
 
   if (!Number.isFinite(clienteId) || clienteId <= 0) notFound();
 
-  const [canEditCliente, canAddVehiculo, canEditVehiculo, canDeleteVehiculo, canDeleteCliente] = await Promise.all([
+  const [canEditCliente, canAddVehiculo, canEditVehiculo, canDeleteVehiculo, canDeleteCliente, canAddServicios] = await Promise.all([
     currentUserHasPermission(PERMISOS.CLIENTES_EDIT),
     currentUserHasPermission(PERMISOS.CLIENTES_ADD_VEHICULO),
     currentUserHasPermission(PERMISOS.CLIENTES_EDIT_VEHICULO),
     currentUserHasPermission(PERMISOS.CLIENTES_DEL_VEHICULO),
     currentUserHasPermission(PERMISOS.CLIENTES_DEL),
+    currentUserHasPermission(PERMISOS.SERVICIOS_ADD),
   ]);
 
   if (requestedAddVehicle && !canAddVehiculo) {
@@ -357,13 +358,15 @@ export default async function ClienteDetailPage({
                     </div>
                   </details>
 
-                  <Link
-                    href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${v.id}`}
-                    className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium text-on-primary"
-                  >
-                    <Wrench className="size-3.5" />
-                    Crear servicio
-                  </Link>
+                  {canAddServicios ? (
+                    <Link
+                      href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${v.id}`}
+                      className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium text-on-primary"
+                    >
+                      <Wrench className="size-3.5" />
+                      Crear servicio
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             ))

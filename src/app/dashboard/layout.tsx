@@ -20,7 +20,8 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const [canViewClientes, canViewUsuarios, canViewPermisos] = await Promise.all([
+  const [canViewServicios, canViewClientes, canViewUsuarios, canViewPermisos] = await Promise.all([
+    currentUserHasPermission(PERMISOS.SERVICIOS_VER),
     currentUserHasPermission(PERMISOS.CLIENTES_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_PERMISOS),
@@ -32,6 +33,7 @@ export default async function DashboardLayout({
         <main className="pb-20">{children}</main>
       </OfflineGuard>
       <BottomNav
+        canViewServicios={canViewServicios}
         canViewPermisos={canViewPermisos}
         canViewUsuarios={canViewUsuarios}
         canViewClientes={canViewClientes}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 import { EntregaForm } from "./_form";
 
@@ -38,6 +39,12 @@ export default async function EntregaPage({
   const servicioId = Number(id);
 
   if (!Number.isFinite(servicioId) || servicioId <= 0) notFound();
+
+  const canEntregarVehiculo = await currentUserHasPermission(PERMISOS.SERVICIOS_ENTREGAR_V);
+
+  if (!canEntregarVehiculo) {
+    redirect(`/dashboard/servicios/${servicioId}?error=No+tienes+permiso+para+entregar+vehiculos.`);
+  }
 
   const supabase = await createSupabaseServerComponentClient();
 
