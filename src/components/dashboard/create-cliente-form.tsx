@@ -20,24 +20,18 @@ export function CreateClienteForm() {
   const confirmDuplicateRef = useRef<HTMLInputElement>(null);
 
   const duplicateKey = state.duplicateMatches?.length
-    ? `${state.duplicateName ?? ""}:${state.duplicateMatches.map((cliente) => cliente.id).join(",")}`
+    ? `${state.duplicateName ?? ""}:${state.duplicateMatches.map((c) => c.id).join(",")}`
     : null;
 
   const showDuplicateModal = Boolean(duplicateKey && duplicateKey !== dismissedDuplicateKey);
 
   const handleCancelDuplicate = () => {
-    if (confirmDuplicateRef.current) {
-      confirmDuplicateRef.current.value = "0";
-    }
-
+    if (confirmDuplicateRef.current) confirmDuplicateRef.current.value = "0";
     setDismissedDuplicateKey(duplicateKey);
   };
 
   const handleConfirmDuplicate = () => {
-    if (confirmDuplicateRef.current) {
-      confirmDuplicateRef.current.value = "1";
-    }
-
+    if (confirmDuplicateRef.current) confirmDuplicateRef.current.value = "1";
     setDismissedDuplicateKey(duplicateKey);
     formRef.current?.requestSubmit();
   };
@@ -47,44 +41,44 @@ export function CreateClienteForm() {
       <form
         ref={formRef}
         action={formAction}
-        className="mt-5 space-y-4"
+        className="space-y-3"
         onSubmit={() => setDismissedDuplicateKey(null)}
       >
         <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
         <input ref={confirmDuplicateRef} name="confirmDuplicate" type="hidden" value="0" />
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-on-surface">
           Nombre
           <input
-            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+            className="mt-1.5 h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
             name="nombre"
             required
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-on-surface">
           Correo
           <input
-            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+            className="mt-1.5 h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
             name="correo"
             type="email"
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-on-surface">
           Teléfono
           <input
-            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+            className="mt-1.5 h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
             name="telefono"
           />
         </label>
 
         {state.error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <div className="rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
             {state.error}
           </div>
         ) : null}
 
         <button
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:cursor-not-allowed disabled:opacity-60"
           disabled={pending}
           type="submit"
         >
@@ -100,49 +94,48 @@ export function CreateClienteForm() {
       </form>
 
       {showDuplicateModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4">
-          <div className="w-full max-w-lg rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-2xl">
-            <p className="text-xs uppercase tracking-[0.25em] text-amber-700/80">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/40 px-4">
+          <div className="w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-xl">
+            <p className="text-xs font-medium uppercase tracking-wide text-on-surface-variant">
               Cliente duplicado
             </p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            <h3 className="mt-1.5 text-lg font-semibold tracking-tight text-on-surface">
               Ya existe un cliente con este nombre
             </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+            <p className="mt-2 text-sm leading-6 text-on-surface-variant">
               Encontramos cliente{state.duplicateMatches && state.duplicateMatches.length === 1 ? "" : "s"} con el nombre{" "}
-              <span className="font-semibold text-slate-950">{state.duplicateName}</span>.
+              <span className="font-semibold text-on-surface">{state.duplicateName}</span>.
               ¿Deseas continuar de todos modos?
             </p>
 
-            <div className="mt-4 space-y-3 rounded-3xl bg-slate-50 p-4">
+            <div className="mt-3 space-y-2 rounded-lg bg-surface-container-low p-3">
               {state.duplicateMatches?.map((cliente) => (
-                <div key={cliente.id} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                  <p className="text-sm font-semibold text-slate-950">
-                    {cliente.nombre}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {cliente.telefono?.trim() || "Sin teléfono"}
-                    {" · "}
-                    {cliente.correo?.trim() || "Sin correo"}
+                <div
+                  key={cliente.id}
+                  className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2"
+                >
+                  <p className="text-sm font-semibold text-on-surface">{cliente.nombre}</p>
+                  <p className="mt-0.5 text-xs text-on-surface-variant">
+                    {cliente.telefono?.trim() || "Sin teléfono"} · {cliente.correo?.trim() || "Sin correo"}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <div className="mt-4 flex gap-3">
               <button
-                className="h-11 rounded-2xl border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:border-slate-950"
+                className="h-11 flex-1 rounded-lg border border-outline-variant text-sm font-medium text-on-surface transition"
                 type="button"
                 onClick={handleCancelDuplicate}
               >
                 Cancelar
               </button>
               <button
-                className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="h-11 flex-1 rounded-lg bg-primary text-sm font-semibold text-on-primary transition"
                 type="button"
                 onClick={handleConfirmDuplicate}
               >
-                Sí, continuar
+                Continuar
               </button>
             </div>
           </div>

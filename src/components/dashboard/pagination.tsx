@@ -7,22 +7,20 @@ type PaginationProps = {
 };
 
 export function Pagination({ page, pageCount, buildHref }: PaginationProps) {
-  if (pageCount <= 1) {
-    return null;
-  }
+  if (pageCount <= 1) return null;
 
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-      <p className="text-sm text-slate-500">
-        Pagina {page} de {pageCount}
+    <div className="mt-4 flex items-center justify-between border-t border-outline-variant pt-4 pb-2">
+      <p className="text-xs text-on-surface-variant">
+        Página {page} de {pageCount}
       </p>
       <div className="flex gap-2">
         <Link
           aria-disabled={page <= 1}
-          className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
             page <= 1
-              ? "pointer-events-none border-slate-200 text-slate-300"
-              : "border-slate-300 text-slate-700 hover:border-slate-950 hover:text-slate-950"
+              ? "pointer-events-none border-outline-variant text-on-surface-variant/40"
+              : "border-outline-variant text-on-surface hover:border-primary hover:text-primary"
           }`}
           href={buildHref(Math.max(1, page - 1))}
         >
@@ -30,10 +28,10 @@ export function Pagination({ page, pageCount, buildHref }: PaginationProps) {
         </Link>
         <Link
           aria-disabled={page >= pageCount}
-          className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
             page >= pageCount
-              ? "pointer-events-none border-slate-200 text-slate-300"
-              : "border-slate-300 text-slate-700 hover:border-slate-950 hover:text-slate-950"
+              ? "pointer-events-none border-outline-variant text-on-surface-variant/40"
+              : "border-outline-variant text-on-surface hover:border-primary hover:text-primary"
           }`}
           href={buildHref(Math.min(pageCount, page + 1))}
         >

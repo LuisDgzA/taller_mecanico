@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { PageHeader } from "@/components/dashboard/page-header";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
 import { ServiciosSearch } from "@/components/dashboard/servicios-search";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
@@ -41,7 +43,6 @@ export default async function ServiciosPage({
 
   const supabase = await createSupabaseServerComponentClient();
 
-  // Two-step search: first resolve matching vehiculo IDs by placa
   let vehiculoIds: number[] | null = null;
   if (search) {
     const { data: vs } = await supabase
@@ -70,7 +71,6 @@ export default async function ServiciosPage({
     if (vehiculoIds.length > 0) {
       query = query.in("vehiculo_id", vehiculoIds) as typeof query;
     } else {
-      // Plate search yielded nothing — try description
       query = query.ilike("descripcion", `%${search}%`) as typeof query;
     }
   }
@@ -84,84 +84,73 @@ export default async function ServiciosPage({
   const list = servicios ?? [];
 
   return (
-    <main className="flex-1 px-6 py-8 sm:px-8">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Servicios
-          </h1>
-        </div>
-        <Link
-          className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-950 px-4 text-sm font-semibold transition hover:bg-slate-800 sm:self-start"
-          href="/dashboard/servicios/nuevo"
-        >
-          <span className="text-white">+ Agregar servicio</span>
-        </Link>
-      </div>
+    <>
+      <PageHeader title="Órdenes de Servicio" />
 
-      <div className="mt-6">
-        <ServiciosSearch defaultSearch={search} defaultStatus={status} />
-      </div>
+      <ServiciosSearch defaultSearch={search} defaultStatus={status} />
 
       {list.length === 0 ? (
-        <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-16 text-center text-sm text-slate-500">
-          <p className="font-medium text-slate-700">
+        <div className="px-4 py-16 text-center text-sm text-on-surface-variant">
+          <p className="font-medium text-on-surface">
             {search || status
-              ? "No hay servicios que coincidan con los filtros."
-              : "No hay servicios registrados aún."}
+              ? "Sin resultados para estos filtros."
+              : "No hay servicios registrados."}
           </p>
-          <p className="mt-2">
+          <p className="mt-1 text-xs">
             {search || status
-              ? "Prueba limpiando la búsqueda o cambia el estado seleccionado."
-              : "Cuando registres el primer ingreso del taller, aparecerá aquí."}
+              ? "Prueba cambiando la búsqueda o el estado."
+              : "Agrega el primer servicio con el botón +."}
           </p>
         </div>
       ) : (
-        <div className="mt-6 space-y-3">
+        <div className="divide-y divide-outline-variant">
           {list.map((s) => (
             <Link
               key={s.id}
-              className="block rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-400 sm:p-5"
               href={`/dashboard/servicios/${s.id}`}
+              className="flex flex-col gap-1.5 px-4 py-3.5 transition-colors active:bg-surface-container-low"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                      {s.vehiculo?.placa ?? "—"}
-                    </span>
-                    <ServicioStatusBadge status={s.status} />
-                  </div>
-
-                  <p className="mt-3 text-sm font-medium text-slate-800">
-                    {[s.vehiculo?.marca, s.vehiculo?.modelo].filter(Boolean).join(" ") || "Sin datos de vehículo"}
-                  </p>
-                  {s.vehiculo?.cliente?.nombre ? (
-                    <p className="mt-1 text-sm text-slate-500">
-                      Cliente: {s.vehiculo.cliente.nombre}
-                    </p>
-                  ) : null}
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium tracking-wide text-on-surface-variant">
+                    {s.vehiculo?.placa ?? "—"}
+                  </span>
+                  <span className="truncate text-sm font-semibold text-on-surface">
+                    {[s.vehiculo?.marca, s.vehiculo?.modelo]
+                      .filter(Boolean)
+                      .join(" ") || "Sin vehículo"}
+                  </span>
                 </div>
-                <span className="shrink-0 text-xs text-slate-400">
-                  {formatRelativeDate(s.fecha_inicio)}
-                </span>
+                <ServicioStatusBadge status={s.status} />
               </div>
 
+              {s.vehiculo?.cliente?.nombre ? (
+                <p className="text-xs text-on-surface-variant">
+                  {s.vehiculo.cliente.nombre}
+                </p>
+              ) : null}
+
               {s.descripcion ? (
-                <p className="mt-3 line-clamp-2 text-sm text-slate-500">
+                <p className="line-clamp-2 text-xs leading-relaxed text-on-surface-variant">
                   {s.descripcion}
                 </p>
               ) : null}
 
-              {s.status === 2 ? (
-                <div className="mt-3 inline-flex items-center rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                  Listo para entrega
-                </div>
-              ) : null}
+              <p className="text-right text-[10px] text-on-surface-variant">
+                {formatRelativeDate(s.fecha_inicio)}
+              </p>
             </Link>
           ))}
         </div>
       )}
-    </main>
+
+      <Link
+        href="/dashboard/servicios/nuevo"
+        className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
+        aria-label="Agregar servicio"
+      >
+        <Plus className="size-6" />
+      </Link>
+    </>
   );
 }

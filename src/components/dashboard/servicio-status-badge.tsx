@@ -1,8 +1,8 @@
 const STATUS_CONFIG = {
-  0: { label: "Pendiente", className: "bg-orange-100 text-orange-700" },
-  1: { label: "En Progreso", className: "bg-blue-100 text-blue-700" },
-  2: { label: "Finalizado", className: "bg-emerald-100 text-emerald-700" },
-  3: { label: "Entregado", className: "bg-slate-200 text-slate-600" },
+  0: { label: "Pendiente",   bg: "#73560014", color: "#735600" },
+  1: { label: "En Progreso", bg: "#004ac614", color: "#004ac6" },
+  2: { label: "Finalizado",  bg: "#00573314", color: "#005a33" },
+  3: { label: "Entregado",   bg: "#43455614", color: "#434655" },
 } as const;
 
 type ServicioStatus = keyof typeof STATUS_CONFIG;
@@ -12,7 +12,8 @@ export function ServicioStatusBadge({ status }: { status: number }) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${config.className}`}
+      className="shrink-0 rounded px-2 py-0.5 text-xs font-medium"
+      style={{ background: config.bg, color: config.color }}
     >
       {config.label}
     </span>

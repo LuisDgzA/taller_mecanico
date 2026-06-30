@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ChevronLeft, Wrench } from "lucide-react";
 
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -12,36 +13,47 @@ export default function ForgotPasswordPage() {
   const configured = isSupabaseConfigured();
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(160deg,#111827_0%,#1f2937_42%,#f97316_160%)] px-6 py-12">
-      <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-slate-950/70 p-7 text-white shadow-2xl backdrop-blur">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.25em] text-orange-300/80">
-            Recuperación
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Restablecer contraseña
-          </h1>
-          <p className="text-sm leading-6 text-slate-300">
-            Te enviaremos un enlace para recuperar el acceso del taller.
-          </p>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-surface px-6 py-12">
+      {/* Brand */}
+      <div className="mb-8 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
+          <Wrench className="size-7 text-on-primary" />
         </div>
+        <h1 className="text-xl font-semibold tracking-tight text-on-surface">
+          WorkshopPro
+        </h1>
+        <p className="mt-1 text-sm text-on-surface-variant">
+          Sistema de gestión del taller
+        </p>
+      </div>
 
-        <div className="mt-6">
-          {configured ? (
-            <ResetPasswordForm />
-          ) : (
-            <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-              Configura `.env.local` primero para habilitar el flujo con
-              Supabase.
-            </div>
-          )}
-        </div>
+      {/* Form */}
+      <div className="w-full max-w-sm">
+        <h2 className="mb-1 text-center text-base font-semibold text-on-surface">
+          Restablecer contraseña
+        </h2>
+        <p className="mb-5 text-center text-sm text-on-surface-variant">
+          Te enviaremos un enlace para recuperar el acceso.
+        </p>
 
-        <div className="mt-6">
+        {configured ? (
+          <ResetPasswordForm />
+        ) : (
+          <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">
+            Configura{" "}
+            <code className="rounded bg-surface-container px-1 text-xs">
+              .env.local
+            </code>{" "}
+            primero para habilitar el flujo con Supabase.
+          </div>
+        )}
+
+        <div className="mt-5 text-center">
           <Link
-            className="text-sm font-medium text-orange-300 underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-primary"
             href="/login"
           >
+            <ChevronLeft className="size-4" />
             Volver a iniciar sesión
           </Link>
         </div>

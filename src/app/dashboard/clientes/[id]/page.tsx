@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { Car, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 
 import { deleteClienteAction, updateClienteAction } from "@/actions/clientes";
-import { createVehiculoAction, deleteVehiculoAction, updateVehiculoAction } from "@/actions/vehiculos";
-import { CollapsibleCard } from "@/components/dashboard/collapsible-card";
-import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
-import { PlateLookupCard } from "@/components/dashboard/plate-lookup-card";
+import {
+  createVehiculoAction,
+  deleteVehiculoAction,
+  updateVehiculoAction,
+} from "@/actions/vehiculos";
 import { ActionButton } from "@/components/ui/action-button";
+import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
+import { PageHeader } from "@/components/dashboard/page-header";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type ClienteDetail = {
@@ -27,22 +30,28 @@ type VehiculoRow = {
   anio: number | null;
 };
 
+const inputClass =
+  "mt-1.5 h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary";
+
 export default async function ClienteDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    addVehicle?: string;
+  }>;
 }) {
   const { id } = await params;
   const feedback = await searchParams;
   const clienteId = Number(id);
   const error = feedback.error?.trim() ?? "";
   const success = feedback.success?.trim() ?? "";
+  const showAddVehicle = feedback.addVehicle === "1";
 
-  if (!Number.isFinite(clienteId) || clienteId <= 0) {
-    notFound();
-  }
+  if (!Number.isFinite(clienteId) || clienteId <= 0) notFound();
 
   const supabase = await createSupabaseServerComponentClient();
   const [{ data: cliente }, { data: vehiculos }] = await Promise.all([
@@ -59,370 +68,298 @@ export default async function ClienteDetailPage({
       .returns<VehiculoRow[]>(),
   ]);
 
-  if (!cliente) {
-    notFound();
-  }
+  if (!cliente) notFound();
 
   const vehicleList = vehiculos ?? [];
-  const serviciosCount = vehicleList.length
-    ? (
-        await supabase
-          .from("servicios")
-          .select("id", { count: "exact", head: true })
-          .in(
-            "vehiculo_id",
-            vehicleList.map((vehiculo) => vehiculo.id),
-          )
-      ).count ?? 0
-    : 0;
 
   return (
-    <main className="flex-1 px-6 py-8 sm:px-8">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            {cliente.nombre?.trim() || "Cliente sin nombre"}
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Administra vehículos desde el contexto del cliente y usa la búsqueda
-            por placa para evitar duplicados.
-          </p>
-        </div>
-        <Link
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:border-slate-950"
-          href="/dashboard/clientes"
-        >
-          <ArrowLeft className="size-4" />
-          Volver a clientes
-        </Link>
-      </div>
+    <>
+      <PageHeader
+        title="Detalle del Cliente"
+        backHref="/dashboard/clientes"
+        action={
+          <Link
+            href="?edit=1"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-on-surface transition-colors active:bg-surface-container"
+            aria-label="Editar"
+          >
+            <Pencil className="size-4" />
+          </Link>
+        }
+      />
 
       {error ? (
-        <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="mx-4 mt-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div
+          className="mx-4 mt-3 rounded-lg px-4 py-3 text-sm"
+          style={{ background: "#00573314", color: "#005a33" }}
+        >
           {success}
         </div>
       ) : null}
 
-      <section className="mt-8 grid gap-5 lg:grid-cols-[0.88fr_1.12fr]">
-        <div className="space-y-5">
-          <CollapsibleCard defaultOpen={false} label="Datos del cliente" title="Ficha general">
-            <form action={updateClienteAction} className="space-y-4">
-              <input
-                name="redirectTo"
-                type="hidden"
-                value={`/dashboard/clientes/${cliente.id}`}
-              />
-              <input name="id" type="hidden" value={cliente.id} />
-              <label className="block text-sm font-medium text-slate-700">
-                Nombre
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  defaultValue={cliente.nombre ?? ""}
-                  name="nombre"
-                  required
-                />
-              </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Correo
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  defaultValue={cliente.correo ?? ""}
-                  name="correo"
-                  type="email"
-                />
-              </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Teléfono
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  defaultValue={cliente.telefono ?? ""}
-                  name="telefono"
-                />
-              </label>
-              <div className="flex flex-wrap gap-3">
-                <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
-                  Guardar cliente
-                </ActionButton>
-              </div>
-            </form>
-
-            <form action={deleteClienteAction} className="mt-4 border-t border-slate-200 pt-4">
-              <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
-              <input name="id" type="hidden" value={cliente.id} />
-              <ConfirmSubmitButton
-                className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
-              >
-                Eliminar cliente y sus vehículos
-              </ConfirmSubmitButton>
-            </form>
-          </CollapsibleCard>
-
-          <PlateLookupCard />
+      {/* ── Ficha general ── */}
+      <section>
+        <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+          Ficha general
         </div>
 
-        <div className="space-y-5">
-          <CollapsibleCard label="Vehículos del cliente" title={`${vehicleList.length} vehículo${vehicleList.length === 1 ? "" : "s"}`}>
-            <p className="mb-4 inline-block rounded-2xl bg-slate-50 px-4 py-2 text-sm text-slate-600">
-              Servicios asociados detectados: {serviciosCount ?? 0}
-            </p>
+        <form action={updateClienteAction}>
+          <input
+            name="redirectTo"
+            type="hidden"
+            value={`/dashboard/clientes/${clienteId}?success=Cliente+actualizado`}
+          />
+          <input name="id" type="hidden" value={clienteId} />
 
-            <form action={createVehiculoAction} className="grid gap-3 md:grid-cols-2">
+          <div className="divide-y divide-outline-variant">
+            <div className="px-4 py-3">
+              <label className="block text-xs text-on-surface-variant">Nombre</label>
               <input
-                name="redirectTo"
-                type="hidden"
-                value={`/dashboard/clientes/${cliente.id}`}
+                className={inputClass}
+                defaultValue={cliente.nombre ?? ""}
+                name="nombre"
+                required
               />
-              <input name="clienteId" type="hidden" value={cliente.id} />
-              <label className="text-sm font-medium text-slate-700">
-                Placa
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  name="placa"
-                  required
-                />
-              </label>
-              <label className="text-sm font-medium text-slate-700">
-                Marca
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  name="marca"
-                />
-              </label>
-              <label className="text-sm font-medium text-slate-700">
-                Modelo
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  name="modelo"
-                />
-              </label>
-              <label className="text-sm font-medium text-slate-700">
-                Color
-                <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                  name="color"
-                />
-              </label>
-              <label className="text-sm font-medium text-slate-700">
+            </div>
+            <div className="px-4 py-3">
+              <label className="block text-xs text-on-surface-variant">Correo</label>
+              <input
+                className={inputClass}
+                defaultValue={cliente.correo ?? ""}
+                name="correo"
+                type="email"
+              />
+            </div>
+            <div className="px-4 py-3">
+              <label className="block text-xs text-on-surface-variant">Teléfono</label>
+              <input
+                className={inputClass}
+                defaultValue={cliente.telefono ?? ""}
+                name="telefono"
+              />
+            </div>
+            <div className="px-4 py-3">
+              <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
+                Guardar cambios
+              </ActionButton>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      {/* ── Vehículos Asociados ── */}
+      <section className="mt-4">
+        <div className="flex items-center justify-between bg-surface-container-low px-4 py-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            Vehículos Asociados
+          </span>
+          <Link
+            href={
+              showAddVehicle
+                ? `/dashboard/clientes/${clienteId}`
+                : `?addVehicle=1`
+            }
+            className="flex items-center gap-1 text-xs font-medium text-primary"
+          >
+            {showAddVehicle ? (
+              "Cancelar"
+            ) : (
+              <>
+                <Plus className="size-3.5" />
+                Añadir Vehículo
+              </>
+            )}
+          </Link>
+        </div>
+
+        {showAddVehicle ? (
+          <form
+            action={createVehiculoAction}
+            className="space-y-3 border-b border-outline-variant bg-surface-container-low px-4 pb-4 pt-3"
+          >
+            <input
+              name="redirectTo"
+              type="hidden"
+              value={`/dashboard/clientes/${clienteId}`}
+            />
+            <input name="clienteId" type="hidden" value={clienteId} />
+
+            <div className="grid grid-cols-2 gap-3">
+              {(
+                [
+                  { label: "Placa", name: "placa", required: true },
+                  { label: "Marca", name: "marca" },
+                  { label: "Modelo", name: "modelo" },
+                  { label: "Color", name: "color" },
+                ] as const
+              ).map((f) => (
+                <label key={f.name} className="block text-xs font-medium text-on-surface">
+                  {f.label}
+                  <input
+                    className={inputClass}
+                    name={f.name}
+                    required={"required" in f ? f.required : false}
+                  />
+                </label>
+              ))}
+              <label className="block text-xs font-medium text-on-surface">
                 Año
                 <input
-                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                  className={inputClass}
                   max={new Date().getFullYear()}
                   min={1900}
                   name="anio"
                   type="number"
                 />
               </label>
-              <div className="md:col-span-2">
-                <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
-                  Agregar vehículo
-                </ActionButton>
-              </div>
-            </form>
+            </div>
 
-            <div className="mt-6 space-y-4">
-              {vehicleList.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center text-sm text-slate-500">
-                  Este cliente todavía no tiene vehículos registrados.
-                </div>
-              ) : (
-                vehicleList.map((vehiculo) => (
-                  <div key={vehiculo.id} className="rounded-3xl border border-slate-200 p-5">
-                    <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 pb-4">
-                      <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                        {vehiculo.placa}
-                      </span>
-                      <p className="text-sm text-slate-500">
-                        {vehiculo.marca ?? "Sin marca"} · {vehiculo.modelo ?? "Sin modelo"}
+            <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
+              Agregar vehículo
+            </ActionButton>
+          </form>
+        ) : null}
+
+        <div className="divide-y divide-outline-variant">
+          {vehicleList.length === 0 ? (
+            <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
+              No hay vehículos registrados.
+            </div>
+          ) : (
+            vehicleList.map((v) => (
+              <div key={v.id} className="px-4 py-3.5">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container">
+                    <Car className="size-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-on-surface">
+                        {[v.marca, v.modelo].filter(Boolean).join(" ") ||
+                          "Sin datos"}
                       </p>
+                      <span className="ml-auto shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
+                        {v.placa}
+                      </span>
                     </div>
+                    <p className="mt-0.5 text-xs text-on-surface-variant">
+                      {[v.anio, v.color].filter(Boolean).join(" · ") || "Sin datos adicionales"}
+                    </p>
+                  </div>
+                </div>
 
-                    <details className="mt-4 lg:hidden">
-                      <summary className="cursor-pointer list-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
-                        Editar vehículo
-                      </summary>
-                      <div className="mt-4 space-y-4">
-                        <form action={updateVehiculoAction} className="grid gap-3 md:grid-cols-2">
-                          <input
-                            name="redirectTo"
-                            type="hidden"
-                            value={`/dashboard/clientes/${cliente.id}`}
-                          />
-                          <input name="id" type="hidden" value={vehiculo.id} />
-                          <input name="clienteId" type="hidden" value={cliente.id} />
-                          <label className="text-sm font-medium text-slate-700">
-                            Placa
-                            <input
-                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                              defaultValue={vehiculo.placa}
-                              name="placa"
-                              required
-                            />
-                          </label>
-                          <label className="text-sm font-medium text-slate-700">
-                            Marca
-                            <input
-                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                              defaultValue={vehiculo.marca ?? ""}
-                              name="marca"
-                            />
-                          </label>
-                          <label className="text-sm font-medium text-slate-700">
-                            Modelo
-                            <input
-                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                              defaultValue={vehiculo.modelo ?? ""}
-                              name="modelo"
-                            />
-                          </label>
-                          <label className="text-sm font-medium text-slate-700">
-                            Color
-                            <input
-                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                              defaultValue={vehiculo.color ?? ""}
-                              name="color"
-                            />
-                          </label>
-                          <label className="text-sm font-medium text-slate-700">
+                <div className="mt-3 flex gap-2 border-t border-outline-variant pt-3">
+                  <details className="flex-1">
+                    <summary className="flex h-9 cursor-pointer list-none select-none items-center justify-center rounded-lg border border-outline-variant text-sm font-medium text-on-surface">
+                      Ver detalles
+                    </summary>
+
+                    <div className="mt-3 space-y-3 rounded-lg bg-surface-container-low p-3">
+                      <form action={updateVehiculoAction} className="space-y-3">
+                        <input
+                          name="redirectTo"
+                          type="hidden"
+                          value={`/dashboard/clientes/${clienteId}`}
+                        />
+                        <input name="id" type="hidden" value={v.id} />
+                        <input name="clienteId" type="hidden" value={clienteId} />
+
+                        <div className="grid grid-cols-2 gap-3">
+                          {(
+                            [
+                              { label: "Placa", name: "placa", value: v.placa, required: true },
+                              { label: "Marca", name: "marca", value: v.marca },
+                              { label: "Modelo", name: "modelo", value: v.modelo },
+                              { label: "Color", name: "color", value: v.color },
+                            ] as const
+                          ).map((f) => (
+                            <label key={f.name} className="block text-xs font-medium text-on-surface">
+                              {f.label}
+                              <input
+                                className={inputClass}
+                                defaultValue={f.value ?? ""}
+                                name={f.name}
+                                required={"required" in f ? f.required : false}
+                              />
+                            </label>
+                          ))}
+                          <label className="block text-xs font-medium text-on-surface">
                             Año
                             <input
-                              className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                              defaultValue={vehiculo.anio ?? ""}
+                              className={inputClass}
+                              defaultValue={v.anio ?? ""}
                               max={new Date().getFullYear()}
                               min={1900}
                               name="anio"
                               type="number"
                             />
                           </label>
-                          <div className="md:col-span-2 flex flex-wrap gap-2">
-                            <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
-                              Guardar vehículo
-                            </ActionButton>
-                            <Link
-                              className="inline-flex h-11 items-center rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
-                              href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${vehiculo.id}`}
-                            >
-                              Crear servicio →
-                            </Link>
-                          </div>
-                        </form>
-
-                        <form action={deleteVehiculoAction}>
-                          <input
-                            name="redirectTo"
-                            type="hidden"
-                            value={`/dashboard/clientes/${cliente.id}`}
-                          />
-                          <input name="id" type="hidden" value={vehiculo.id} />
-                          <input name="clienteId" type="hidden" value={cliente.id} />
-                          <ConfirmSubmitButton
-                            className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                            confirmMessage="Se eliminará este vehículo. ¿Deseas continuar?"
-                          >
-                            Eliminar
-                          </ConfirmSubmitButton>
-                        </form>
-                      </div>
-                    </details>
-
-                    <div className="mt-4 hidden gap-4 lg:grid lg:grid-cols-[1fr_auto]">
-                      <form action={updateVehiculoAction} className="grid gap-3 md:grid-cols-2">
-                        <input
-                          name="redirectTo"
-                          type="hidden"
-                          value={`/dashboard/clientes/${cliente.id}`}
-                        />
-                        <input name="id" type="hidden" value={vehiculo.id} />
-                        <input name="clienteId" type="hidden" value={cliente.id} />
-                        <label className="text-sm font-medium text-slate-700">
-                          Placa
-                          <input
-                            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                            defaultValue={vehiculo.placa}
-                            name="placa"
-                            required
-                          />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Marca
-                          <input
-                            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                            defaultValue={vehiculo.marca ?? ""}
-                            name="marca"
-                          />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Modelo
-                          <input
-                            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                            defaultValue={vehiculo.modelo ?? ""}
-                            name="modelo"
-                          />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Color
-                          <input
-                            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                            defaultValue={vehiculo.color ?? ""}
-                            name="color"
-                          />
-                        </label>
-                        <label className="text-sm font-medium text-slate-700">
-                          Año
-                          <input
-                            className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                            defaultValue={vehiculo.anio ?? ""}
-                            max={new Date().getFullYear()}
-                            min={1900}
-                            name="anio"
-                            type="number"
-                          />
-                        </label>
-                        <div className="md:col-span-2 flex flex-wrap gap-2">
-                          <button
-                            className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-                            type="submit"
-                          >
-                            Guardar vehículo
-                          </button>
-                          <Link
-                            className="inline-flex h-11 items-center rounded-2xl border border-slate-300 px-4 text-sm font-medium transition hover:border-slate-950"
-                            href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${vehiculo.id}`}
-                          >
-                            Crear servicio →
-                          </Link>
                         </div>
+
+                        <ActionButton className="h-10 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
+                          Guardar vehículo
+                        </ActionButton>
                       </form>
 
-                      <form action={deleteVehiculoAction} className="flex items-start">
+                      <form action={deleteVehiculoAction}>
                         <input
                           name="redirectTo"
                           type="hidden"
-                          value={`/dashboard/clientes/${cliente.id}`}
+                          value={`/dashboard/clientes/${clienteId}`}
                         />
-                        <input name="id" type="hidden" value={vehiculo.id} />
-                        <input name="clienteId" type="hidden" value={cliente.id} />
+                        <input name="id" type="hidden" value={v.id} />
+                        <input name="clienteId" type="hidden" value={clienteId} />
                         <ConfirmSubmitButton
-                          className="h-11 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                          confirmMessage="Se eliminará este vehículo. ¿Deseas continuar?"
+                          className="h-10 w-full rounded-lg border border-error text-sm font-medium text-error transition"
+                          confirmMessage="Se eliminará este vehículo y sus servicios. ¿Deseas continuar?"
                         >
-                          Eliminar
+                          Eliminar vehículo
                         </ConfirmSubmitButton>
                       </form>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CollapsibleCard>
+                  </details>
+
+                  <Link
+                    href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${v.id}`}
+                    className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium text-on-primary"
+                  >
+                    <Wrench className="size-3.5" />
+                    Crear servicio
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
-    </main>
+
+      {/* ── Zona de peligro ── */}
+      <section className="px-4 pb-8 pt-6">
+        <div className="rounded-lg border border-error px-4 py-4">
+          <p className="text-sm font-semibold text-error">Zona de peligro</p>
+          <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+            Eliminar permanentemente a este cliente y todos sus datos asociados.
+            Esta acción no se puede deshacer.
+          </p>
+          <form action={deleteClienteAction} className="mt-4">
+            <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
+            <input name="id" type="hidden" value={clienteId} />
+            <ConfirmSubmitButton
+              className="flex h-10 items-center gap-2 rounded-lg border border-error px-4 text-sm font-medium text-error transition"
+              confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
+            >
+              <Trash2 className="size-4" />
+              Eliminar cliente
+            </ConfirmSubmitButton>
+          </form>
+        </div>
+      </section>
+    </>
   );
 }

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Search } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 const STATUS_TABS = [
   { value: "", label: "Todos" },
   { value: "0", label: "Pendiente" },
@@ -33,10 +35,29 @@ export function ServiciosSearch({
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="flex flex-1 gap-2">
+    <div className={cn("transition-opacity", isPending && "opacity-50")}>
+      <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            onClick={() => navigate(search, tab.value)}
+            className={cn(
+              "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
+              defaultStatus === tab.value
+                ? "bg-primary text-on-primary"
+                : "bg-surface-container text-on-surface-variant",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="relative px-4 pb-3">
+        <Search className="pointer-events-none absolute left-7 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
         <input
-          className="h-11 flex-1 rounded-2xl border border-slate-300 px-4 text-sm outline-none transition focus:border-slate-950"
+          className="h-10 w-full rounded-lg border border-outline-variant bg-surface-container-low pl-9 pr-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
           placeholder="Buscar por placa o descripción…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -44,27 +65,7 @@ export function ServiciosSearch({
             if (e.key === "Enter") navigate(search, defaultStatus);
           }}
         />
-        <button
-          className="flex h-11 shrink-0 items-center gap-2 rounded-2xl border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:border-slate-950 hover:text-slate-950 disabled:opacity-50"
-          disabled={isPending}
-          type="button"
-          onClick={() => navigate(search, defaultStatus)}
-        >
-          <Search className="size-4" />
-          <span className="hidden sm:inline">Buscar</span>
-        </button>
       </div>
-      <select
-        className="h-11 rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-950"
-        value={defaultStatus}
-        onChange={(e) => navigate(search, e.target.value)}
-      >
-        {STATUS_TABS.map((tab) => (
-          <option key={tab.value} value={tab.value}>
-            {tab.label}
-          </option>
-        ))}
-      </select>
     </div>
   );
 }

@@ -1,12 +1,15 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Flag } from "lucide-react";
 
 import { createBitacoraAction, deleteBitacoraAction } from "@/actions/bitacoras";
 import { updateServicioStatusAction } from "@/actions/servicios";
 import { ActionButton } from "@/components/ui/action-button";
-import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
+import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { ImageViewer } from "@/components/dashboard/image-viewer";
+import { PageHeader } from "@/components/dashboard/page-header";
 import { ServiceDetailTabs } from "@/components/dashboard/service-detail-tabs";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
@@ -71,6 +74,23 @@ const NEXT_STATUS: Record<number, { value: number; label: string } | null> = {
   3: null,
 };
 
+function SectionHeader({ children }: { children: ReactNode }) {
+  return (
+    <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+      {children}
+    </div>
+  );
+}
+
+function InfoRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3">
+      <span className="shrink-0 text-xs text-on-surface-variant">{label}</span>
+      <span className="text-right text-sm text-on-surface">{children}</span>
+    </div>
+  );
+}
+
 export default async function ServicioDetailPage({
   params,
   searchParams,
@@ -112,20 +132,13 @@ export default async function ServicioDetailPage({
 
   if (!servicio) notFound();
 
-  // Generate signed URLs for service images
-  const serviceImagePaths = [
-    servicio.imagen_uno,
-    servicio.imagen_dos,
-    servicio.imagen_tres,
-    servicio.imagen_cuatro,
-    servicio.imagen_cinco,
-  ];
-
   const serviceImageUrls = await Promise.all(
-    serviceImagePaths.map((p) => getSignedUrl(supabase, "servicios", p)),
+    [servicio.imagen_uno, servicio.imagen_dos, servicio.imagen_tres,
+     servicio.imagen_cuatro, servicio.imagen_cinco].map((p) =>
+      getSignedUrl(supabase, "servicios", p),
+    ),
   );
 
-  // Generate signed URLs for each bitácora entry
   const bitacoras = bitacorasRaw ?? [];
   const bitacoraImageUrls = await Promise.all(
     bitacoras.map((b) =>
@@ -141,293 +154,277 @@ export default async function ServicioDetailPage({
   const nextStatus = NEXT_STATUS[servicio.status] ?? null;
   const error = feedback.error?.trim() ?? "";
   const success = feedback.success?.trim() ?? "";
-  const summaryContent = (
-    <div className="space-y-5">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-          Vehículo
-        </p>
-        <div className="mt-3 space-y-1">
-          <span className="inline-flex rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-            {servicio.vehiculo?.placa ?? "—"}
-          </span>
-          <p className="mt-2 font-medium">
-            {[servicio.vehiculo?.marca, servicio.vehiculo?.modelo]
-              .filter(Boolean)
-              .join(" ") || "Sin datos"}
-          </p>
-          {servicio.vehiculo?.color ? (
-            <p className="text-sm text-slate-500">
-              Color: {servicio.vehiculo.color}
-            </p>
-          ) : null}
-          {servicio.vehiculo?.anio ? (
-            <p className="text-sm text-slate-500">
-              Año: {servicio.vehiculo.anio}
-            </p>
-          ) : null}
-        </div>
 
-        {servicio.vehiculo?.cliente ? (
-          <div className="mt-4 border-t border-slate-100 pt-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-              Cliente
-            </p>
-            <p className="mt-1 font-medium">
-              {servicio.vehiculo.cliente.nombre ?? "Sin nombre"}
-            </p>
-            {servicio.vehiculo.cliente.telefono ? (
-              <p className="text-sm text-slate-500">
-                {servicio.vehiculo.cliente.telefono}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="mt-4 space-y-1 border-t border-slate-100 pt-4">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-            Ingreso
-          </p>
-          <p className="text-sm text-slate-700">
-            {formatDate(servicio.fecha_inicio)}
-          </p>
-          {servicio.recibido_por?.nombre ? (
-            <p className="text-sm text-slate-500">
-              Recibió: {servicio.recibido_por.nombre}
-            </p>
-          ) : null}
-        </div>
-
-        {servicio.fecha_fin ? (
-          <div className="mt-4 border-t border-slate-100 pt-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-              Finalizado
-            </p>
-            <p className="text-sm text-slate-700">
-              {formatDate(servicio.fecha_fin)}
-            </p>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-          Estado actual
-        </p>
-        <div className="mt-3">
-          <ServicioStatusBadge status={servicio.status} />
-        </div>
-
+  // ── Tab: Información ──────────────────────────────────────────────
+  const infoContent = (
+    <div>
+      {/* Status + advance action */}
+      <div className="flex items-center gap-3 border-b border-outline-variant px-4 py-3">
+        <ServicioStatusBadge status={servicio.status} />
         {nextStatus ? (
-          <form action={updateServicioStatusAction} className="mt-4">
+          <form action={updateServicioStatusAction} className="flex-1">
             <input name="id" type="hidden" value={servicio.id} />
             <input name="status" type="hidden" value={nextStatus.value} />
-            <ActionButton className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium transition hover:border-slate-950 hover:bg-slate-50 disabled:opacity-70">
+            <ActionButton className="h-9 w-full rounded-lg border border-primary text-sm font-medium text-primary transition disabled:opacity-60">
               {nextStatus.label}
             </ActionButton>
           </form>
         ) : null}
-
         {servicio.status === 2 ? (
           <Link
-            className="mt-4 flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+            className="flex h-9 flex-1 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-on-primary"
             href={`/dashboard/servicios/${servicio.id}/entrega`}
           >
-            Entregar vehículo →
+            Entregar →
           </Link>
-        ) : null}
-
-        {servicio.tracking_token ? (
-          <CopyLinkButton token={servicio.tracking_token} />
         ) : null}
       </div>
 
-      {servicio.descripcion ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-            Descripción
-          </p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">
-            {servicio.descripcion}
-          </p>
-        </div>
+      {/* Vehículo */}
+      <SectionHeader>Vehículo</SectionHeader>
+      <div className="divide-y divide-outline-variant">
+        <InfoRow label="Placa">
+          <span className="rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
+            {servicio.vehiculo?.placa ?? "—"}
+          </span>
+        </InfoRow>
+        <InfoRow label="Marca / Modelo">
+          {[servicio.vehiculo?.marca, servicio.vehiculo?.modelo]
+            .filter(Boolean)
+            .join(" ") || "Sin datos"}
+        </InfoRow>
+        {servicio.vehiculo?.color ? (
+          <InfoRow label="Color">{servicio.vehiculo.color}</InfoRow>
+        ) : null}
+        {servicio.vehiculo?.anio ? (
+          <InfoRow label="Año">{servicio.vehiculo.anio}</InfoRow>
+        ) : null}
+      </div>
+
+      {/* Cliente */}
+      {servicio.vehiculo?.cliente ? (
+        <>
+          <SectionHeader>Cliente</SectionHeader>
+          <div className="divide-y divide-outline-variant">
+            <InfoRow label="Nombre">
+              {servicio.vehiculo.cliente.nombre ?? "Sin nombre"}
+            </InfoRow>
+            {servicio.vehiculo.cliente.telefono ? (
+              <InfoRow label="Teléfono">
+                <a
+                  href={`tel:${servicio.vehiculo.cliente.telefono}`}
+                  className="text-primary"
+                >
+                  {servicio.vehiculo.cliente.telefono}
+                </a>
+              </InfoRow>
+            ) : null}
+          </div>
+        </>
       ) : null}
 
-      {serviceImageUrls.some(Boolean) ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-            Fotografías de ingreso
+      {/* Fechas */}
+      <SectionHeader>Fechas</SectionHeader>
+      <div className="divide-y divide-outline-variant">
+        <InfoRow label="Ingreso">{formatDate(servicio.fecha_inicio)}</InfoRow>
+        {servicio.recibido_por?.nombre ? (
+          <InfoRow label="Recibió">{servicio.recibido_por.nombre}</InfoRow>
+        ) : null}
+        {servicio.fecha_fin ? (
+          <InfoRow label="Finalizado">{formatDate(servicio.fecha_fin)}</InfoRow>
+        ) : null}
+      </div>
+
+      {/* Descripción */}
+      {servicio.descripcion ? (
+        <>
+          <SectionHeader>Descripción</SectionHeader>
+          <p className="px-4 py-3 text-sm leading-relaxed text-on-surface">
+            {servicio.descripcion}
           </p>
-          <ImageViewer
-            altPrefix="Imagen de ingreso"
-            className="mt-3"
-            columnsClassName="grid-cols-2 sm:grid-cols-3"
-            images={serviceImageUrls.filter(Boolean) as string[]}
-          />
+        </>
+      ) : null}
+
+      {/* Fotos de ingreso */}
+      {serviceImageUrls.some(Boolean) ? (
+        <>
+          <SectionHeader>Fotografías de ingreso</SectionHeader>
+          <div className="px-4 py-3">
+            <ImageViewer
+              altPrefix="Imagen de ingreso"
+              columnsClassName="grid-cols-2"
+              images={serviceImageUrls.filter(Boolean) as string[]}
+            />
+          </div>
+        </>
+      ) : null}
+
+      {/* Tracking link */}
+      {servicio.tracking_token ? (
+        <div className="px-4 py-3">
+          <CopyLinkButton token={servicio.tracking_token} />
         </div>
       ) : null}
     </div>
   );
 
+  // ── Tab: Bitácora ─────────────────────────────────────────────────
   const bitacoraContent = (
-    <div className="space-y-5">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-          Bitácora de trabajo
-        </p>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight">
-          {bitacoras.length} nota{bitacoras.length !== 1 ? "s" : ""}
-        </h2>
+    <div>
+      {bitacoras.length === 0 ? (
+        <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
+          <p className="font-medium text-on-surface">Sin notas aún.</p>
+          <p className="mt-1 text-xs">Agrega la primera nota con el formulario de abajo.</p>
+        </div>
+      ) : (
+        <div className="relative px-4 py-5">
+          {/* vertical timeline line */}
+          <div
+            aria-hidden
+            className="absolute left-[2.65rem] top-5 w-px bg-outline-variant"
+            style={{ bottom: "3rem" }}
+          />
 
-        {bitacoras.length === 0 ? (
-          <div className="mt-4 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-            <p className="font-medium text-slate-700">
-              Aún no hay notas en esta bitácora.
-            </p>
-            <p className="mt-2">
-              El técnico todavía no ha registrado avances o fotografías del trabajo.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-4 space-y-5">
-            {bitacoras.map((entry, idx) => {
-              const imgs = bitacoraImageUrls[idx].filter(Boolean) as string[];
-              const isOwn = staff?.id === entry.autor?.id;
+          {bitacoras.map((entry, idx) => {
+            const imgs = bitacoraImageUrls[idx].filter(Boolean) as string[];
+            const isOwn = staff?.id === entry.autor?.id;
+            const initials = entry.autor?.nombre?.charAt(0).toUpperCase() ?? "?";
 
-              return (
-                <div
-                  key={entry.id}
-                  className="rounded-3xl border border-slate-200 p-5"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex size-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">
-                          {entry.autor?.nombre?.charAt(0).toUpperCase() ?? "?"}
-                        </span>
-                        <span className="text-sm font-medium">
-                          {entry.autor?.nombre ?? "Desconocido"}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-slate-400">
-                        {formatDate(entry.fecha)}
-                      </p>
-                    </div>
+            return (
+              <div key={entry.id} className="relative mb-6 flex gap-3">
+                {/* avatar */}
+                <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container">
+                  <span className="text-xs font-semibold text-on-surface">
+                    {initials}
+                  </span>
+                </div>
 
-                    {isOwn ? (
-                      <form action={deleteBitacoraAction}>
-                        <input name="id" type="hidden" value={entry.id} />
-                        <input
-                          name="servicioId"
-                          type="hidden"
-                          value={servicio.id}
-                        />
-                        <ConfirmSubmitButton
-                          className="rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
-                          confirmMessage="Se eliminará esta nota de bitácora. ¿Deseas continuar?"
-                        >
-                          Eliminar
-                        </ConfirmSubmitButton>
-                      </form>
+                <div className="flex-1 pt-0.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="text-sm text-on-surface-variant">
+                      <span className="font-medium text-on-surface">
+                        {entry.autor?.nombre ?? "Desconocido"}
+                      </span>{" "}
+                      ha añadido una nota
+                    </p>
+                    <p className="shrink-0 text-xs text-on-surface-variant">
+                      {formatDate(entry.fecha)}
+                    </p>
+                  </div>
+
+                  <div className="mt-2 rounded-lg bg-surface-container-low p-3">
+                    <p className="text-sm leading-relaxed text-on-surface">
+                      {entry.descripcion}
+                    </p>
+                    {imgs.length > 0 ? (
+                      <ImageViewer
+                        altPrefix="Foto de bitácora"
+                        className="mt-3"
+                        columnsClassName="grid-cols-2"
+                        images={imgs}
+                      />
                     ) : null}
                   </div>
 
-                  <p className="mt-3 text-sm leading-6 text-slate-700">
-                    {entry.descripcion}
-                  </p>
-
-                  {imgs.length > 0 ? (
-                    <ImageViewer
-                      altPrefix="Foto de bitácora"
-                      className="mt-3"
-                      columnsClassName="grid-cols-2 sm:grid-cols-4"
-                      images={imgs}
-                    />
+                  {isOwn ? (
+                    <form action={deleteBitacoraAction} className="mt-1.5">
+                      <input name="id" type="hidden" value={entry.id} />
+                      <input name="servicioId" type="hidden" value={servicio.id} />
+                      <ConfirmSubmitButton
+                        className="rounded px-2 py-1 text-xs font-medium text-error transition hover:bg-error-container"
+                        confirmMessage="Se eliminará esta nota. ¿Deseas continuar?"
+                      >
+                        Eliminar nota
+                      </ConfirmSubmitButton>
+                    </form>
                   ) : null}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
+            );
+          })}
 
+          {/* End of log marker */}
+          <div className="relative flex items-center gap-3">
+            <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center">
+              <Flag className="size-3.5 text-on-surface-variant" />
+            </div>
+            <p className="text-xs uppercase tracking-wide text-on-surface-variant">
+              Fin de bitácora
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Add note form */}
       {servicio.status !== 3 ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-            Agregar nota
-          </p>
-          <form action={createBitacoraAction} className="mt-4 space-y-4">
-            <input
-              name="servicioId"
-              type="hidden"
-              value={servicio.id}
+        <>
+          <SectionHeader>Agregar nota</SectionHeader>
+          <form action={createBitacoraAction} className="space-y-3 px-4 py-4">
+            <input name="servicioId" type="hidden" value={servicio.id} />
+            <textarea
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
+              minLength={5}
+              name="descripcion"
+              placeholder="Describe el trabajo realizado…"
+              required
+              rows={4}
             />
-            <label className="block text-sm font-medium text-slate-700">
-              Descripción *
-              <textarea
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-950"
-                minLength={5}
-                name="descripcion"
-                placeholder="Describe el trabajo realizado…"
-                required
-                rows={4}
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Fotografías
-              <p className="mt-0.5 text-xs font-normal text-slate-400">
-                Máximo 4 · JPG, PNG o WebP
-              </p>
+            <label className="block text-xs font-medium text-on-surface-variant">
+              Fotografías (máx. 4 · JPG, PNG o WebP)
               <input
                 accept="image/*"
-                className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 p-3 text-sm text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-slate-950 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+                className="mt-1.5 w-full rounded-lg border border-dashed border-outline-variant bg-surface-container-low p-3 text-sm text-on-surface-variant file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-xs file:font-semibold file:text-on-primary"
                 multiple
                 name="imagenes"
                 type="file"
               />
             </label>
-            <ActionButton className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
+            <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
               Agregar nota
             </ActionButton>
           </form>
-        </div>
+        </>
       ) : null}
     </div>
   );
 
   return (
-    <main className="flex-1 px-6 py-8 sm:px-8">
-      {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Servicio #{servicio.id}
-          </h1>
-        </div>
-        <Link
-          className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:border-slate-950"
-          href="/dashboard/servicios"
-        >
-          ← Volver a servicios
-        </Link>
+    <>
+      <PageHeader
+        title={`Servicio #${servicio.id}`}
+        backHref="/dashboard/servicios"
+      />
+
+      {/* Service summary strip */}
+      <div className="border-b border-outline-variant px-4 pb-3 pt-2">
+        {servicio.descripcion ? (
+          <p className="mb-2 text-sm text-on-surface-variant line-clamp-2">
+            {servicio.descripcion}
+          </p>
+        ) : null}
+        <ServicioStatusBadge status={servicio.status} />
       </div>
 
       {error ? (
-        <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="mx-4 mt-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div
+          className="mx-4 mt-3 rounded-lg px-4 py-3 text-sm"
+          style={{ background: "#00573314", color: "#005a33" }}
+        >
           {success}
         </div>
       ) : null}
+
       <ServiceDetailTabs
         bitacoraCount={bitacoras.length}
+        infoContent={infoContent}
         bitacoraContent={bitacoraContent}
-        infoContent={summaryContent}
       />
-    </main>
+    </>
   );
 }

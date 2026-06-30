@@ -1,113 +1,159 @@
 import Link from "next/link";
-import { Wrench, ClipboardList, Users, UserRound, ArrowRight, Gauge } from "lucide-react";
+import { ClipboardList, LogOut, Plus, UserRound, Users } from "lucide-react";
 
-const cards = [
-  {
-    href: "/dashboard/servicios/nuevo",
-    title: "Agregar Servicio",
-    description: "Registra el ingreso de una moto y sus evidencias iniciales.",
-    icon: Wrench,
-    accent: "from-orange-500 to-amber-300",
-  },
-  {
-    href: "/dashboard/servicios",
-    title: "Continuar Servicio",
-    description: "Consulta servicios activos y actualiza su progreso.",
-    icon: ClipboardList,
-    accent: "from-sky-500 to-cyan-300",
-  },
-  {
-    href: "/dashboard/usuarios",
-    title: "Usuarios",
-    description: "Administra las cuentas internas del personal.",
-    icon: Users,
-    accent: "from-violet-500 to-fuchsia-300",
-  },
-  {
-    href: "/dashboard/clientes",
-    title: "Clientes",
-    description: "Gestiona clientes, vehículos y futuros links del portal.",
-    icon: UserRound,
-    accent: "from-emerald-500 to-lime-300",
-  },
+import { logoutAction } from "@/actions/auth";
+import { ActionButton } from "@/components/ui/action-button";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
+import { getCurrentStaffProfile } from "@/lib/current-staff";
+import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
+
+type RecentServicio = {
+  id: number;
+  descripcion: string | null;
+  status: number;
+  fecha_inicio: string;
+  vehiculo: {
+    placa: string;
+    marca: string | null;
+    modelo: string | null;
+    cliente: { nombre: string | null } | null;
+  } | null;
+};
+
+const quickActions = [
+  { href: "/dashboard/servicios/nuevo", label: "Nuevo Servicio", icon: Plus },
+  { href: "/dashboard/servicios", label: "Ver Servicios", icon: ClipboardList },
+  { href: "/dashboard/clientes", label: "Clientes", icon: UserRound },
+  { href: "/dashboard/usuarios", label: "Usuarios", icon: Users },
 ];
 
-export default function DashboardPage() {
+function formatRelativeDate(dateString: string) {
+  const diff = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `hace ${days} día${days === 1 ? "" : "s"}`;
+  if (hours > 0) return `hace ${hours} hora${hours === 1 ? "" : "s"}`;
+  if (minutes > 0) return `hace ${minutes} min`;
+  return "hace un momento";
+}
+
+export default async function DashboardPage() {
+  const [staff, supabase] = await Promise.all([
+    getCurrentStaffProfile(),
+    createSupabaseServerComponentClient(),
+  ]);
+
+  const { data } = await supabase
+    .from("servicios")
+    .select(
+      "id, descripcion, status, fecha_inicio, vehiculo:vehiculos(placa, marca, modelo, cliente:clientes(nombre))",
+    )
+    .order("fecha_inicio", { ascending: false })
+    .limit(5)
+    .returns<RecentServicio[]>();
+
+  const recentServices = data ?? [];
+
   return (
-    <main className="flex-1 px-6 py-8 sm:px-8">
-      <div className="flex flex-col gap-3 border-b border-slate-200 pb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-balance">
-          Operación central del taller
-        </h1>
+    <>
+      <PageHeader title="WorkshopPro" />
+
+      {/* Welcome */}
+      <div className="border-b border-outline-variant px-4 py-4">
+        <p className="text-base font-semibold text-on-surface">
+          Hola, {staff?.nombre?.split(" ")[0] ?? "usuario"}
+        </p>
       </div>
 
-      <section className="mt-8 grid gap-5 xl:grid-cols-[1.4fr_0.8fr]">
-        <div className="rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_45%,#f97316_140%)] p-6 text-white shadow-lg">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-semibold tracking-tight text-balance">
-                Panel administrativo
-              </h2>
-            </div>
-            <div className="rounded-3xl bg-white/10 p-4">
-              <Gauge className="size-8" />
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-            Atajos utiles
-          </p>
-          <div className="mt-4 space-y-3">
-            <Link
-              className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 text-sm font-medium transition hover:border-slate-950"
-              href="/dashboard/clientes"
-            >
-              Buscar cliente o registrar uno nuevo
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 text-sm font-medium transition hover:border-slate-950"
-              href="/dashboard/usuarios"
-            >
-              Revisar personal activo e inactivo
-              <ArrowRight className="size-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-8 grid gap-5 md:grid-cols-2">
-        {cards.map((card) => {
-          const Icon = card.icon;
+      {/* Quick actions */}
+      <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+        Acciones rápidas
+      </div>
+      <div className="grid grid-cols-2 gap-3 px-4 py-4">
+        {quickActions.map((action) => {
+          const Icon = action.icon;
 
           return (
             <Link
-              key={card.href}
-              className="group relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-              href={card.href}
+              key={action.href}
+              href={action.href}
+              className="flex flex-col items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-center transition active:bg-surface-container-low"
             >
-              <div
-                className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${card.accent}`}
-              />
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    {card.title}
-                  </h2>
-                  <p className="mt-3 max-w-sm text-sm leading-6 text-slate-600">
-                    {card.description}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-slate-950 p-3 text-white transition group-hover:scale-105">
-                  <Icon className="size-5" />
-                </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container">
+                <Icon className="size-5 text-primary" />
               </div>
+              <span className="text-xs font-medium text-on-surface">
+                {action.label}
+              </span>
             </Link>
           );
         })}
-      </section>
-    </main>
+      </div>
+
+      {/* Recent activity */}
+      <div className="mt-2 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+        Actividad reciente
+      </div>
+
+      {recentServices.length === 0 ? (
+        <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
+          No hay servicios registrados aún.
+        </div>
+      ) : (
+        <div className="divide-y divide-outline-variant">
+          {recentServices.map((s) => (
+            <Link
+              key={s.id}
+              href={`/dashboard/servicios/${s.id}`}
+              className="flex flex-col gap-1.5 px-4 py-3 transition-colors active:bg-surface-container-low"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
+                    {s.vehiculo?.placa ?? "—"}
+                  </span>
+                  <span className="truncate text-sm font-medium text-on-surface">
+                    {[s.vehiculo?.marca, s.vehiculo?.modelo]
+                      .filter(Boolean)
+                      .join(" ") || "Sin vehículo"}
+                  </span>
+                </div>
+                <ServicioStatusBadge status={s.status} />
+              </div>
+              {s.vehiculo?.cliente?.nombre ? (
+                <p className="text-xs text-on-surface-variant">
+                  {s.vehiculo.cliente.nombre}
+                </p>
+              ) : null}
+              <p className="text-right text-[10px] text-on-surface-variant">
+                {formatRelativeDate(s.fecha_inicio)}
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Session */}
+      <div className="mt-4 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+        Sesión
+      </div>
+      <div className="px-4 py-4 pb-6">
+        <p className="text-sm font-medium text-on-surface">
+          {staff?.nombre ?? "—"}
+        </p>
+        <p className="mt-0.5 text-xs text-on-surface-variant">
+          {staff?.correo ?? "—"}
+        </p>
+        <form action={logoutAction} className="mt-4">
+          <ActionButton className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-outline-variant text-sm font-medium text-on-surface transition disabled:opacity-60">
+            <LogOut className="size-4" />
+            Cerrar sesión
+          </ActionButton>
+        </form>
+      </div>
+    </>
   );
 }
