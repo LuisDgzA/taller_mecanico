@@ -11,6 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/dashboard/page-header";
 
@@ -433,6 +434,7 @@ export default function PermisosPage() {
     if (!selectedUser) {
       setSaveError("Selecciona un usuario primero.");
       setSaveMessage("");
+      toast.error("Selecciona un usuario primero.");
       return;
     }
 
@@ -455,14 +457,22 @@ export default function PermisosPage() {
       };
 
       if (!response.ok) {
-        setSaveError(payload.error ?? "No se pudieron guardar los permisos.");
+        const nextError = payload.error ?? "No se pudieron guardar los permisos.";
+        setSaveError(nextError);
+        toast.error(nextError);
         return;
       }
 
       setSelectedPermissionIds(payload.permisos ?? selectedPermissionIds);
-      setSaveMessage("Permisos guardados correctamente.");
+      const successMessage = "Permisos guardados correctamente.";
+      setSaveMessage(successMessage);
+      toast.success(successMessage, {
+        description: `Usuario: ${selectedUser.nombre}`,
+      });
     } catch {
-      setSaveError("No se pudieron guardar los permisos.");
+      const nextError = "No se pudieron guardar los permisos.";
+      setSaveError(nextError);
+      toast.error(nextError);
     } finally {
       setIsSavingPermissions(false);
     }
@@ -582,20 +592,6 @@ export default function PermisosPage() {
           </div>
         )}
 
-        {saveMessage ? (
-          <div
-            className="mt-4 rounded-lg border px-4 py-3 text-sm"
-            style={{ background: "#00573314", borderColor: "#95cfab", color: "#005a33" }}
-          >
-            {saveMessage}
-          </div>
-        ) : null}
-
-        {saveError ? (
-          <div className="mt-4 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
-            {saveError}
-          </div>
-        ) : null}
       </section>
 
       <div className="mt-3 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
@@ -705,6 +701,24 @@ export default function PermisosPage() {
       </section>
 
       <div className="px-4 pb-6 pt-2">
+        {saveMessage ? (
+          <div
+            className="mb-3 rounded-lg border px-4 py-3 text-sm"
+            role="status"
+            aria-live="polite"
+            style={{ background: "#00573314", borderColor: "#95cfab", color: "#005a33" }}
+          >
+            {saveMessage}
+          </div>
+        ) : null}
+        {saveError ? (
+          <div
+            className="mb-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container"
+            role="alert"
+          >
+            {saveError}
+          </div>
+        ) : null}
         <button
           className={`h-11 w-full rounded-lg px-5 text-sm font-semibold text-on-primary transition ${
             canSavePermissions
