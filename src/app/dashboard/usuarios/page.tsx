@@ -1,8 +1,10 @@
 import { createUsuarioAction, toggleUsuarioStatusAction, updateUsuarioAction } from "@/actions/usuarios";
+import { redirect } from "next/navigation";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { ActionButton } from "@/components/ui/action-button";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
@@ -29,6 +31,12 @@ export default async function UsuariosPage({
 }: {
   searchParams: SearchParams;
 }) {
+  const canViewUsers = await currentUserHasPermission(PERMISOS.USUARIOS_VER);
+
+  if (!canViewUsers) {
+    redirect("/dashboard");
+  }
+
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const error = params.error?.trim() ?? "";
@@ -39,6 +47,9 @@ export default async function UsuariosPage({
   const supabase = await createSupabaseServerComponentClient();
   const currentStaff = await getCurrentStaffProfile();
   const hasAdminAccess = isSupabaseAdminConfigured();
+  const canDeactivateUsers = await currentUserHasPermission(PERMISOS.USUARIOS_DESACTIVAR);
+  const canEditUsers = await currentUserHasPermission(PERMISOS.USUARIOS_EDIT);
+  const canAddUser = await currentUserHasPermission(PERMISOS.USUARIOS_ADD);
 
   let request = supabase
     .from("usuarios")
@@ -93,58 +104,60 @@ export default async function UsuariosPage({
       ) : null}
 
       <section className="mt-8 grid gap-5 xl:grid-cols-[0.72fr_1.28fr]">
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="border-b border-slate-200 pb-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-              Agregar usuario
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Nueva cuenta interna
-            </h2>
-          </div>
+        {canAddUser ? (
+          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="border-b border-slate-200 pb-4">
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+                Agregar usuario
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                Nueva cuenta interna
+              </h2>
+            </div>
 
-          <form action={createUsuarioAction} className="mt-5 space-y-4">
-            <input name="redirectTo" type="hidden" value="/dashboard/usuarios" />
-            <label className="block text-sm font-medium text-slate-700">
-              Nombre
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="nombre"
-                required
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Correo
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="correo"
-                required
-                type="email"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Teléfono
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="telefono"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Contraseña {hasAdminAccess ? "" : "(opcional)"}
-              <input
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                minLength={8}
-                name="password"
-                required={hasAdminAccess}
-                placeholder={hasAdminAccess ? "" : "Solo si también crearás Auth aparte"}
-                type="password"
-              />
-            </label>
-            <ActionButton className="h-11 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
-              Crear usuario
-            </ActionButton>
-          </form>
-        </div>
+            <form action={createUsuarioAction} className="mt-5 space-y-4">
+              <input name="redirectTo" type="hidden" value="/dashboard/usuarios" />
+              <label className="block text-sm font-medium text-slate-700">
+                Nombre
+                <input
+                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                  name="nombre"
+                  required
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-700">
+                Correo
+                <input
+                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                  name="correo"
+                  required
+                  type="email"
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-700">
+                Teléfono
+                <input
+                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                  name="telefono"
+                />
+              </label>
+              <label className="block text-sm font-medium text-slate-700">
+                Contraseña {hasAdminAccess ? "" : "(opcional)"}
+                <input
+                  className="mt-2 h-11 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                  minLength={8}
+                  name="password"
+                  required={hasAdminAccess}
+                  placeholder={hasAdminAccess ? "" : "Solo si también crearás Auth aparte"}
+                  type="password"
+                />
+              </label>
+              <ActionButton className="h-11 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
+                Crear usuario
+              </ActionButton>
+            </form>
+          </div>
+        ) : null}
 
         <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -240,33 +253,37 @@ export default async function UsuariosPage({
                             type="password"
                           />
                         </label>
-                        <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-                          <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
-                            Guardar cambios
-                          </ActionButton>
-                          {isCurrentUser ? (
-                            <p className="text-xs uppercase tracking-[0.2em] text-amber-700">
-                              Tu propio correo queda bloqueado aquí para evitar lockout.
-                            </p>
-                          ) : null}
-                        </div>
+                        {canEditUsers ? (
+                          <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+                            <ActionButton className="h-11 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
+                              Guardar cambios
+                            </ActionButton>
+                            {isCurrentUser ? (
+                              <p className="text-xs uppercase tracking-[0.2em] text-amber-700">
+                                Tu propio correo queda bloqueado aquí para evitar lockout.
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </form>
 
-                      <form action={toggleUsuarioStatusAction} className="flex items-start">
-                        <input name="redirectTo" type="hidden" value="/dashboard/usuarios" />
-                        <input name="id" type="hidden" value={usuario.id} />
-                        <input name="authId" type="hidden" value={usuario.auth_id ?? ""} />
-                        <input name="status" type="hidden" value={usuario.status} />
-                        <ActionButton
-                          className={`h-11 rounded-2xl px-4 text-sm font-semibold transition disabled:opacity-70 ${
-                            usuario.status === 1
-                              ? "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-                              : "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                          }`}
-                        >
-                          {usuario.status === 1 ? "Desactivar" : "Activar"}
-                        </ActionButton>
-                      </form>
+                      {canDeactivateUsers ? (
+                        <form action={toggleUsuarioStatusAction} className="flex items-start">
+                          <input name="redirectTo" type="hidden" value="/dashboard/usuarios" />
+                          <input name="id" type="hidden" value={usuario.id} />
+                          <input name="authId" type="hidden" value={usuario.auth_id ?? ""} />
+                          <input name="status" type="hidden" value={usuario.status} />
+                          <ActionButton
+                            className={`h-11 rounded-2xl px-4 text-sm font-semibold transition disabled:opacity-70 ${
+                              usuario.status === 1
+                                ? "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                : "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            }`}
+                          >
+                            {usuario.status === 1 ? "Desactivar" : "Activar"}
+                          </ActionButton>
+                        </form>
+                      ) : null}
                     </div>
                   </div>
                 );

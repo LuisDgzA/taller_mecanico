@@ -9,6 +9,8 @@ import { dashboardNavItems } from "./navigation-items";
 
 type BottomNavProps = {
   className?: string;
+  canViewUsuarios?: boolean;
+  canViewPermisos?: boolean;
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -18,8 +20,23 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function BottomNav({ className }: BottomNavProps) {
+export function BottomNav({
+  className,
+  canViewUsuarios = true,
+  canViewPermisos = true,
+}: BottomNavProps) {
   const pathname = usePathname();
+  const visibleItems = dashboardNavItems.filter((item) => {
+    if (item.href === "/dashboard/usuarios" && !canViewUsuarios) {
+      return false;
+    }
+
+    if (item.href === "/dashboard/permisos" && !canViewPermisos) {
+      return false;
+    }
+
+    return true;
+  });
 
   return (
     <nav
@@ -28,7 +45,7 @@ export function BottomNav({ className }: BottomNavProps) {
         className,
       )}
     >
-      {dashboardNavItems.map((item) => {
+      {visibleItems.map((item) => {
         const Icon = item.icon;
         const active = isActivePath(pathname, item.href);
 

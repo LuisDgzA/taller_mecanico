@@ -1,11 +1,19 @@
 import Link from "next/link";
-import { ClipboardList, LogOut, Plus, UserRound, Users } from "lucide-react";
+import {
+  ClipboardList,
+  LogOut,
+  Plus,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from "lucide-react";
 
 import { logoutAction } from "@/actions/auth";
 import { ActionButton } from "@/components/ui/action-button";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type RecentServicio = {
@@ -26,6 +34,7 @@ const quickActions = [
   { href: "/dashboard/servicios", label: "Ver Servicios", icon: ClipboardList },
   { href: "/dashboard/clientes", label: "Clientes", icon: UserRound },
   { href: "/dashboard/usuarios", label: "Usuarios", icon: Users },
+  { href: "/dashboard/permisos", label: "Permisos", icon: ShieldCheck },
 ];
 
 function formatRelativeDate(dateString: string) {
@@ -41,10 +50,24 @@ function formatRelativeDate(dateString: string) {
 }
 
 export default async function DashboardPage() {
-  const [staff, supabase] = await Promise.all([
+  const [staff, supabase, canViewUsuarios, canViewPermisos] = await Promise.all([
     getCurrentStaffProfile(),
     createSupabaseServerComponentClient(),
+    currentUserHasPermission(PERMISOS.USUARIOS_VER),
+    currentUserHasPermission(PERMISOS.USUARIOS_PERMISOS),
   ]);
+
+  const visibleQuickActions = quickActions.filter((action) => {
+    if (action.href === "/dashboard/usuarios" && !canViewUsuarios) {
+      return false;
+    }
+
+    if (action.href === "/dashboard/permisos" && !canViewPermisos) {
+      return false;
+    }
+
+    return true;
+  });
 
   const { data } = await supabase
     .from("servicios")
@@ -73,7 +96,7 @@ export default async function DashboardPage() {
         Acciones rápidas
       </div>
       <div className="grid grid-cols-2 gap-3 px-4 py-4">
-        {quickActions.map((action) => {
+        {visibleQuickActions.map((action) => {
           const Icon = action.icon;
 
           return (
