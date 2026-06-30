@@ -15,7 +15,6 @@ function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") {
     return pathname === href;
   }
-
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -23,35 +22,35 @@ export function BottomNav({ className }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn("fixed inset-x-0 bottom-0 z-50 px-4 pb-4", className)}>
-      <nav className="bottom-nav-safe mx-auto flex max-w-md items-stretch rounded-[1.75rem] border border-slate-900/10 bg-slate-950 px-2 pt-2 text-white shadow-[0_24px_60px_-36px_rgba(15,23,42,0.9)]">
-        {dashboardNavItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActivePath(pathname, item.href);
+    <nav
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-50 flex items-stretch border-t border-outline-variant bg-surface-container-lowest bottom-nav-safe",
+        className,
+      )}
+    >
+      {dashboardNavItems.map((item) => {
+        const Icon = item.icon;
+        const active = isActivePath(pathname, item.href);
 
-          return (
-            <Link
-              key={item.href}
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors",
+              active ? "text-primary" : "text-on-surface-variant",
+            )}
+          >
+            <Icon
               className={cn(
-                "relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 pb-2 pt-3 text-xs font-medium transition",
-                active
-                  ? "text-orange-400"
-                  : "text-slate-400 hover:text-slate-200",
+                "size-[1.35rem]",
+                active ? "stroke-[2.25]" : "stroke-[1.75]",
               )}
-              href={item.href}
-            >
-              <span
-                className={cn(
-                  "absolute top-1 size-1.5 rounded-full bg-transparent transition",
-                  active && "bg-orange-400",
-                )}
-              />
-              <Icon className="size-[1.15rem]" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
+            />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

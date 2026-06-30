@@ -1,9 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import { Inter } from "next/font/google";
 
 import { AppFeedbackToaster } from "@/components/app-feedback-toaster";
 
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Taller Mecánico",
@@ -26,7 +33,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#020617",
+  themeColor: "#faf8ff",
 };
 
 export default function RootLayout({
@@ -35,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="h-full antialiased" suppressHydrationWarning>
+    <html lang="es" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body
         className="min-h-full bg-background text-foreground"
         suppressHydrationWarning
