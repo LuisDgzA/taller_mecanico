@@ -6,6 +6,13 @@ import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 type PermissionRow = Record<string, unknown>;
 
 export const PERMISOS = {
+  CLIENTES_VER: 6,
+  CLIENTES_ADD: 7,
+  CLIENTES_DEL: 8,
+  CLIENTES_EDIT: 16,
+  CLIENTES_ADD_VEHICULO: 9,
+  CLIENTES_EDIT_VEHICULO: 17,
+  CLIENTES_DEL_VEHICULO: 10,
   USUARIOS_VER: 11,
   USUARIOS_ADD: 12,
   USUARIOS_EDIT: 13,

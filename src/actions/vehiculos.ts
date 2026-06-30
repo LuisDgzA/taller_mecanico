@@ -4,11 +4,22 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { buildActionRedirect, getRedirectTarget } from "@/lib/action-feedback";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { CreateVehiculoSchema, DeleteVehiculoSchema, UpdateVehiculoSchema } from "@/lib/schemas/vehiculo";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
 export async function createVehiculoAction(formData: FormData) {
   const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
+  const canAddVehiculos = await currentUserHasPermission(PERMISOS.CLIENTES_ADD_VEHICULO);
+
+  if (!canAddVehiculos) {
+    redirect(
+      buildActionRedirect(redirectTo, {
+        error: "No tienes permiso para agregar vehiculos.",
+      }),
+    );
+  }
+
   const parsed = CreateVehiculoSchema.safeParse({
     clienteId: formData.get("clienteId"),
     placa: formData.get("placa"),
@@ -47,6 +58,16 @@ export async function createVehiculoAction(formData: FormData) {
 
 export async function updateVehiculoAction(formData: FormData) {
   const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
+  const canEditVehiculos = await currentUserHasPermission(PERMISOS.CLIENTES_EDIT_VEHICULO);
+
+  if (!canEditVehiculos) {
+    redirect(
+      buildActionRedirect(redirectTo, {
+        error: "No tienes permiso para editar vehiculos.",
+      }),
+    );
+  }
+
   const parsed = UpdateVehiculoSchema.safeParse({
     id: formData.get("id"),
     clienteId: formData.get("clienteId"),
@@ -88,6 +109,16 @@ export async function updateVehiculoAction(formData: FormData) {
 
 export async function deleteVehiculoAction(formData: FormData) {
   const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
+  const canDeleteVehiculos = await currentUserHasPermission(PERMISOS.CLIENTES_DEL_VEHICULO);
+
+  if (!canDeleteVehiculos) {
+    redirect(
+      buildActionRedirect(redirectTo, {
+        error: "No tienes permiso para eliminar vehiculos.",
+      }),
+    );
+  }
+
   const parsed = DeleteVehiculoSchema.safeParse({
     id: formData.get("id"),
     clienteId: formData.get("clienteId"),

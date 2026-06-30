@@ -71,7 +71,7 @@ async function fetchPermisosCatalog(
       .from(tableName)
       .select("id, nombre, seg_modulo_id, status")
       .in("seg_modulo_id", moduloIds)
-      .order("id")
+      .order("orden")
       .returns<AccionRow[]>();
 
   const [accionesPrimarias, accionesFallback] = await Promise.all([

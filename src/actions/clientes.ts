@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { buildActionRedirect, getRedirectTarget } from "@/lib/action-feedback";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { DeleteClienteSchema, CreateClienteSchema, UpdateClienteSchema } from "@/lib/schemas/cliente";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
@@ -30,7 +31,14 @@ export async function createClienteAction(
   _: CreateClienteActionState,
   formData: FormData,
 ): Promise<CreateClienteActionState> {
-  const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
+  const canAddClientes = await currentUserHasPermission(PERMISOS.CLIENTES_ADD);
+
+  if (!canAddClientes) {
+    return {
+      error: "No tienes permiso para crear clientes.",
+    };
+  }
+
   const parsed = CreateClienteSchema.safeParse({
     nombre: formData.get("nombre"),
     correo: formData.get("correo"),
@@ -43,6 +51,7 @@ export async function createClienteAction(
     };
   }
 
+  const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
   const supabase = await createSupabaseServerActionClient();
   const duplicateConfirmed = String(formData.get("confirmDuplicate") ?? "").trim() === "1";
   const normalizedName = normalizeName(parsed.data.nombre);
@@ -83,6 +92,16 @@ export async function createClienteAction(
 
 export async function updateClienteAction(formData: FormData) {
   const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
+  const canEditClientes = await currentUserHasPermission(PERMISOS.CLIENTES_EDIT);
+
+  if (!canEditClientes) {
+    redirect(
+      buildActionRedirect(redirectTo, {
+        error: "No tienes permiso para editar clientes.",
+      }),
+    );
+  }
+
   const parsed = UpdateClienteSchema.safeParse({
     id: formData.get("id"),
     nombre: formData.get("nombre"),
@@ -119,6 +138,16 @@ export async function updateClienteAction(formData: FormData) {
 
 export async function deleteClienteAction(formData: FormData) {
   const redirectTo = getRedirectTarget(formData, "/dashboard/clientes");
+  const canDeleteClientes = await currentUserHasPermission(PERMISOS.CLIENTES_DEL);
+
+  if (!canDeleteClientes) {
+    redirect(
+      buildActionRedirect(redirectTo, {
+        error: "No tienes permiso para eliminar clientes.",
+      }),
+    );
+  }
+
   const parsed = DeleteClienteSchema.safeParse({
     id: formData.get("id"),
   });

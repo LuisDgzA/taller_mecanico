@@ -5,6 +5,8 @@ import { CreateClienteForm } from "@/components/dashboard/create-cliente-form";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Pagination } from "@/components/dashboard/pagination";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
+import { redirect } from "next/dist/client/components/navigation";
 
 const PAGE_SIZE = 10;
 
@@ -29,14 +31,28 @@ export default async function ClientesPage({
 }: {
   searchParams: SearchParams;
 }) {
+  const [canViewClientes, canAddClientes] = await Promise.all([
+    currentUserHasPermission(PERMISOS.CLIENTES_VER),
+    currentUserHasPermission(PERMISOS.CLIENTES_ADD),
+  ]);
+
+  if (!canViewClientes) {
+    redirect("/dashboard");
+  }
+
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
-  const showNew = params.new === "1";
+  const requestedNew = params.new === "1";
+  const showNew = requestedNew && canAddClientes;
   const error = params.error?.trim() ?? "";
   const success = params.success?.trim() ?? "";
   const page = Math.max(1, Number(params.page ?? "1") || 1);
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
+
+  if (requestedNew && !canAddClientes) {
+    redirect("/dashboard/clientes?error=No+tienes+permiso+para+crear+clientes.");
+  }
 
   const supabase = await createSupabaseServerComponentClient();
 
@@ -162,7 +178,7 @@ export default async function ClientesPage({
         <Pagination buildHref={buildHref} page={page} pageCount={pageCount} />
       </div>
 
-      {!showNew ? (
+      {!showNew && canAddClientes ? (
         <Link
           href="/dashboard/clientes?new=1"
           className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"

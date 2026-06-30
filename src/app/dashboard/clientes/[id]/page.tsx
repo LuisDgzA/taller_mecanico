@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Car, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 
 import { deleteClienteAction, updateClienteAction } from "@/actions/clientes";
@@ -11,6 +11,7 @@ import {
 import { ActionButton } from "@/components/ui/action-button";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
 type ClienteDetail = {
@@ -49,9 +50,25 @@ export default async function ClienteDetailPage({
   const clienteId = Number(id);
   const error = feedback.error?.trim() ?? "";
   const success = feedback.success?.trim() ?? "";
-  const showAddVehicle = feedback.addVehicle === "1";
+  const requestedAddVehicle = feedback.addVehicle === "1";
 
   if (!Number.isFinite(clienteId) || clienteId <= 0) notFound();
+
+  const [canEditCliente, canAddVehiculo, canEditVehiculo, canDeleteVehiculo, canDeleteCliente] = await Promise.all([
+    currentUserHasPermission(PERMISOS.CLIENTES_EDIT),
+    currentUserHasPermission(PERMISOS.CLIENTES_ADD_VEHICULO),
+    currentUserHasPermission(PERMISOS.CLIENTES_EDIT_VEHICULO),
+    currentUserHasPermission(PERMISOS.CLIENTES_DEL_VEHICULO),
+    currentUserHasPermission(PERMISOS.CLIENTES_DEL),
+  ]);
+
+  if (requestedAddVehicle && !canAddVehiculo) {
+    redirect(
+      `/dashboard/clientes/${clienteId}?error=No+tienes+permiso+para+agregar+vehiculos.`,
+    );
+  }
+
+  const showAddVehicle = requestedAddVehicle && canAddVehiculo;
 
   const supabase = await createSupabaseServerComponentClient();
   const [{ data: cliente }, { data: vehiculos }] = await Promise.all([
@@ -77,7 +94,7 @@ export default async function ClienteDetailPage({
       <PageHeader
         title="Detalle del Cliente"
         backHref="/dashboard/clientes"
-        action={
+        action={canEditCliente ? (
           <Link
             href="?edit=1"
             className="flex h-10 w-10 items-center justify-center rounded-full text-on-surface transition-colors active:bg-surface-container"
@@ -85,7 +102,7 @@ export default async function ClienteDetailPage({
           >
             <Pencil className="size-4" />
           </Link>
-        }
+        ) : null}
       />
 
       {error ? (
@@ -109,7 +126,7 @@ export default async function ClienteDetailPage({
           Ficha general
         </div>
 
-        <form action={updateClienteAction}>
+        <form action={canEditCliente ? updateClienteAction : undefined}>
           <input
             name="redirectTo"
             type="hidden"
@@ -125,6 +142,7 @@ export default async function ClienteDetailPage({
                 defaultValue={cliente.nombre ?? ""}
                 name="nombre"
                 required
+                disabled={!canEditCliente}
               />
             </div>
             <div className="px-4 py-3">
@@ -134,6 +152,7 @@ export default async function ClienteDetailPage({
                 defaultValue={cliente.correo ?? ""}
                 name="correo"
                 type="email"
+                disabled={!canEditCliente}
               />
             </div>
             <div className="px-4 py-3">
@@ -142,13 +161,20 @@ export default async function ClienteDetailPage({
                 className={inputClass}
                 defaultValue={cliente.telefono ?? ""}
                 name="telefono"
+                disabled={!canEditCliente}
               />
             </div>
-            <div className="px-4 py-3">
-              <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
-                Guardar cambios
-              </ActionButton>
-            </div>
+            {canEditCliente ? (
+              <div className="px-4 py-3">
+                <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
+                  Guardar cambios
+                </ActionButton>
+              </div>
+            ) : (
+              <div className="px-4 py-3 text-xs text-on-surface-variant">
+                No tienes permiso para editar clientes.
+              </div>
+            )}
           </div>
         </form>
       </section>
@@ -159,23 +185,25 @@ export default async function ClienteDetailPage({
           <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
             Vehículos Asociados
           </span>
-          <Link
-            href={
-              showAddVehicle
-                ? `/dashboard/clientes/${clienteId}`
-                : `?addVehicle=1`
-            }
-            className="flex items-center gap-1 text-xs font-medium text-primary"
-          >
-            {showAddVehicle ? (
-              "Cancelar"
-            ) : (
-              <>
-                <Plus className="size-3.5" />
-                Añadir Vehículo
-              </>
-            )}
-          </Link>
+          {canAddVehiculo ? (
+            <Link
+              href={
+                showAddVehicle
+                  ? `/dashboard/clientes/${clienteId}`
+                  : `?addVehicle=1`
+              }
+              className="flex items-center gap-1 text-xs font-medium text-primary"
+            >
+              {showAddVehicle ? (
+                "Cancelar"
+              ) : (
+                <>
+                  <Plus className="size-3.5" />
+                  Añadir Vehículo
+                </>
+              )}
+            </Link>
+          ) : null}
         </div>
 
         {showAddVehicle ? (
@@ -261,67 +289,71 @@ export default async function ClienteDetailPage({
                     </summary>
 
                     <div className="mt-3 space-y-3 rounded-lg bg-surface-container-low p-3">
-                      <form action={updateVehiculoAction} className="space-y-3">
-                        <input
-                          name="redirectTo"
-                          type="hidden"
-                          value={`/dashboard/clientes/${clienteId}`}
-                        />
-                        <input name="id" type="hidden" value={v.id} />
-                        <input name="clienteId" type="hidden" value={clienteId} />
+                      {canEditVehiculo ? (
+                        <form action={updateVehiculoAction} className="space-y-3">
+                          <input
+                            name="redirectTo"
+                            type="hidden"
+                            value={`/dashboard/clientes/${clienteId}`}
+                          />
+                          <input name="id" type="hidden" value={v.id} />
+                          <input name="clienteId" type="hidden" value={clienteId} />
 
-                        <div className="grid grid-cols-2 gap-3">
-                          {(
-                            [
-                              { label: "Placa", name: "placa", value: v.placa, required: true },
-                              { label: "Marca", name: "marca", value: v.marca },
-                              { label: "Modelo", name: "modelo", value: v.modelo },
-                              { label: "Color", name: "color", value: v.color },
-                            ] as const
-                          ).map((f) => (
-                            <label key={f.name} className="block text-xs font-medium text-on-surface">
-                              {f.label}
+                          <div className="grid grid-cols-2 gap-3">
+                            {(
+                              [
+                                { label: "Placa", name: "placa", value: v.placa, required: true },
+                                { label: "Marca", name: "marca", value: v.marca },
+                                { label: "Modelo", name: "modelo", value: v.modelo },
+                                { label: "Color", name: "color", value: v.color },
+                              ] as const
+                            ).map((f) => (
+                              <label key={f.name} className="block text-xs font-medium text-on-surface">
+                                {f.label}
+                                <input
+                                  className={inputClass}
+                                  defaultValue={f.value ?? ""}
+                                  name={f.name}
+                                  required={"required" in f ? f.required : false}
+                                />
+                              </label>
+                            ))}
+                            <label className="block text-xs font-medium text-on-surface">
+                              Año
                               <input
                                 className={inputClass}
-                                defaultValue={f.value ?? ""}
-                                name={f.name}
-                                required={"required" in f ? f.required : false}
+                                defaultValue={v.anio ?? ""}
+                                max={new Date().getFullYear()}
+                                min={1900}
+                                name="anio"
+                                type="number"
                               />
                             </label>
-                          ))}
-                          <label className="block text-xs font-medium text-on-surface">
-                            Año
-                            <input
-                              className={inputClass}
-                              defaultValue={v.anio ?? ""}
-                              max={new Date().getFullYear()}
-                              min={1900}
-                              name="anio"
-                              type="number"
-                            />
-                          </label>
-                        </div>
+                          </div>
 
-                        <ActionButton className="h-10 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
-                          Guardar vehículo
-                        </ActionButton>
-                      </form>
+                          <ActionButton className="h-10 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
+                            Guardar vehículo
+                          </ActionButton>
+                        </form>
+                      ) : null}
 
-                      <form action={deleteVehiculoAction}>
-                        <input
-                          name="redirectTo"
-                          type="hidden"
-                          value={`/dashboard/clientes/${clienteId}`}
-                        />
-                        <input name="id" type="hidden" value={v.id} />
-                        <input name="clienteId" type="hidden" value={clienteId} />
-                        <ConfirmSubmitButton
-                          className="h-10 w-full rounded-lg border border-error text-sm font-medium text-error transition"
-                          confirmMessage="Se eliminará este vehículo y sus servicios. ¿Deseas continuar?"
-                        >
-                          Eliminar vehículo
-                        </ConfirmSubmitButton>
-                      </form>
+                      {canDeleteVehiculo ? (
+                        <form action={deleteVehiculoAction}>
+                          <input
+                            name="redirectTo"
+                            type="hidden"
+                            value={`/dashboard/clientes/${clienteId}`}
+                          />
+                          <input name="id" type="hidden" value={v.id} />
+                          <input name="clienteId" type="hidden" value={clienteId} />
+                          <ConfirmSubmitButton
+                            className="h-10 w-full rounded-lg border border-error text-sm font-medium text-error transition"
+                            confirmMessage="Se eliminará este vehículo y sus servicios. ¿Deseas continuar?"
+                          >
+                            Eliminar vehículo
+                          </ConfirmSubmitButton>
+                        </form>
+                      ) : null}
                     </div>
                   </details>
 
@@ -340,26 +372,28 @@ export default async function ClienteDetailPage({
       </section>
 
       {/* ── Zona de peligro ── */}
-      <section className="px-4 pb-8 pt-6">
-        <div className="rounded-lg border border-error px-4 py-4">
-          <p className="text-sm font-semibold text-error">Zona de peligro</p>
-          <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-            Eliminar permanentemente a este cliente y todos sus datos asociados.
-            Esta acción no se puede deshacer.
-          </p>
-          <form action={deleteClienteAction} className="mt-4">
-            <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
-            <input name="id" type="hidden" value={clienteId} />
-            <ConfirmSubmitButton
-              className="flex h-10 items-center gap-2 rounded-lg border border-error px-4 text-sm font-medium text-error transition"
-              confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
-            >
-              <Trash2 className="size-4" />
-              Eliminar cliente
-            </ConfirmSubmitButton>
-          </form>
-        </div>
-      </section>
+      {canDeleteCliente ? (
+        <section className="px-4 pb-8 pt-6">
+          <div className="rounded-lg border border-error px-4 py-4">
+            <p className="text-sm font-semibold text-error">Zona de peligro</p>
+            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+              Eliminar permanentemente a este cliente y todos sus datos asociados.
+              Esta acción no se puede deshacer.
+            </p>
+            <form action={deleteClienteAction} className="mt-4">
+              <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
+              <input name="id" type="hidden" value={clienteId} />
+              <ConfirmSubmitButton
+                className="flex h-10 items-center gap-2 rounded-lg border border-error px-4 text-sm font-medium text-error transition"
+                confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
+              >
+                <Trash2 className="size-4" />
+                Eliminar cliente
+              </ConfirmSubmitButton>
+            </form>
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }
