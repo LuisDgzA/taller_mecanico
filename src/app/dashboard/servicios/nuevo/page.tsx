@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { Camera, Car, FileText } from "lucide-react";
 
 import { createServicioAction } from "@/actions/servicios";
 import { NuevoServicioStep1Form } from "@/components/dashboard/nuevo-servicio-step1";
 import { ActionButton } from "@/components/ui/action-button";
+import { DescripcionField } from "@/components/dashboard/descripcion-field";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { ServiceWizardStepper } from "@/components/dashboard/service-wizard-stepper";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
@@ -46,129 +50,155 @@ export default async function NuevoServicioPage({
 
     if (!vehiculo) notFound();
 
+    const modeloLabel = [vehiculo.marca, vehiculo.modelo, vehiculo.anio]
+      .filter(Boolean)
+      .join(" ") || "Sin datos";
+
+    const clienteInicial = vehiculo.cliente?.nombre?.charAt(0).toUpperCase() ?? "?";
+
     return (
-      <main className="flex-1 px-6 py-8 sm:px-8">
-        <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Detalles del servicio
-            </h1>
-          </div>
-          <Link
-            className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:border-slate-950"
-            href="/dashboard/servicios/nuevo"
-          >
-            ← Volver al paso 1
-          </Link>
-        </div>
+      <>
+        <PageHeader title="Nuevo servicio" backHref="/dashboard/servicios/nuevo" />
 
-        {error ? (
-          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        ) : null}
+        <form action={createServicioAction}>
+          <input name="vehiculoId" type="hidden" value={vehiculo.id} />
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.5fr]">
-          {/* Vehicle / client summary */}
-          <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                Vehículo seleccionado
-              </p>
-              <div className="mt-3 space-y-1">
-                <span className="inline-flex rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                  {vehiculo.placa}
+          <div className="mx-auto max-w-lg lg:max-w-2xl space-y-4 px-4 lg:px-0 pb-28 pt-3">
+            <ServiceWizardStepper currentStep={2} />
+
+            {error ? (
+              <div className="rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
+                {error}
+              </div>
+            ) : null}
+
+            {/* ── Vehículo seleccionado ───────────────────────── */}
+            <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest">
+              <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3">
+                <Car className="size-4 text-primary" />
+                <span className="text-sm font-semibold text-on-surface">
+                  Vehículo Seleccionado
                 </span>
-                <p className="mt-2 text-sm text-slate-700">
-                  {[vehiculo.marca, vehiculo.modelo].filter(Boolean).join(" ") || "Sin datos"}
-                </p>
-                {vehiculo.color && (
-                  <p className="text-sm text-slate-500">Color: {vehiculo.color}</p>
-                )}
-                {vehiculo.anio && (
-                  <p className="text-sm text-slate-500">Año: {vehiculo.anio}</p>
-                )}
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-4 border-b border-outline-variant pb-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+                      Placa
+                    </p>
+                    <p className="text-2xl font-bold tracking-wide text-on-surface">
+                      {vehiculo.placa}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+                      Modelo
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-on-surface">
+                      {modeloLabel}
+                    </p>
+                  </div>
+                </div>
+
+                {vehiculo.cliente ? (
+                  <div className="flex items-center gap-3 pt-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container text-sm font-bold text-on-surface">
+                      {clienteInicial}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+                        Cliente
+                      </p>
+                      <p className="text-sm font-semibold text-on-surface">
+                        {vehiculo.cliente.nombre ?? "Sin nombre"}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            {vehiculo.cliente && (
-              <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                  Cliente
-                </p>
-                <p className="mt-2 font-medium">
-                  {vehiculo.cliente.nombre ?? "Sin nombre"}
-                </p>
-                {vehiculo.cliente.telefono && (
-                  <p className="text-sm text-slate-500">
-                    {vehiculo.cliente.telefono}
-                  </p>
-                )}
+            {/* ── Descripción del problema ────────────────────── */}
+            <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest">
+              <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3">
+                <FileText className="size-4 text-primary" />
+                <span className="text-sm font-semibold text-on-surface">
+                  Descripción del problema
+                </span>
               </div>
-            )}
+              <div className="p-4">
+                <DescripcionField />
+              </div>
+            </div>
+
+            {/* ── Fotografías de ingreso ──────────────────────── */}
+            <div className="overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest">
+              <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Camera className="size-4 text-primary" />
+                  <span className="text-sm font-semibold text-on-surface">
+                    Fotografías de Ingreso
+                  </span>
+                </div>
+                <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs text-on-surface-variant">
+                  Opcional
+                </span>
+              </div>
+              <div className="p-4">
+                <label
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-outline-variant px-4 py-8 text-center transition hover:border-primary"
+                  htmlFor="fotos-input"
+                >
+                  <Camera className="size-6 text-on-surface-variant" />
+                  <span className="text-sm font-medium text-on-surface-variant">Añadir</span>
+                </label>
+                <input
+                  accept="image/*"
+                  className="hidden"
+                  id="fotos-input"
+                  multiple
+                  name="imagenes"
+                  type="file"
+                />
+                <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">
+                  Agregue fotos del estado general del vehículo y daños específicos
+                  reportados antes de iniciar el trabajo.
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Service details form */}
-          <form action={createServicioAction} className="space-y-5">
-            <input name="vehiculoId" type="hidden" value={vehiculo.id} />
-
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                Descripción
-              </p>
-              <textarea
-                className="mt-3 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-950"
-                name="descripcion"
-                placeholder="Describe el problema o el trabajo a realizar…"
-                rows={5}
-              />
+          {/* ── Footer fijo — arriba de bottom-nav en mobile, al fondo en desktop ── */}
+          <div className="fixed bottom-16 left-0 right-0 lg:bottom-0 lg:left-60 z-40 border-t border-outline-variant bg-surface px-4 py-3">
+            <div className="mx-auto flex max-w-lg lg:max-w-2xl gap-3">
+              <Link
+                className="flex h-11 flex-1 items-center justify-center rounded-lg border border-outline-variant text-sm font-medium text-on-surface transition hover:bg-surface-container"
+                href="/dashboard/servicios/nuevo"
+              >
+                Cancelar
+              </Link>
+              <ActionButton className="flex h-11 flex-1 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
+                Continuar →
+              </ActionButton>
             </div>
-
-            <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                Fotografías de ingreso
-              </p>
-              <p className="mt-1 text-xs text-slate-400">
-                Máximo 5 imágenes · JPG, PNG o WebP · hasta 10 MB cada una
-              </p>
-              <input
-                accept="image/*"
-                className="mt-4 w-full rounded-2xl border border-dashed border-slate-300 p-3 text-sm text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-slate-950 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
-                multiple
-                name="imagenes"
-                type="file"
-              />
-            </div>
-
-            <ActionButton className="h-12 w-full rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
-              Registrar servicio
-            </ActionButton>
-          </form>
-        </div>
-      </main>
+          </div>
+        </form>
+      </>
     );
   }
 
   // ── Step 1 ──────────────────────────────────────────────────
   return (
-    <main className="flex-1 px-6 py-8 sm:px-8">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Nuevo servicio
-          </h1>
-        </div>
-        <Link
-          className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:border-slate-950"
-          href="/dashboard/servicios"
-        >
-          Cancelar
-        </Link>
+    <>
+      <PageHeader title="Nuevo servicio" backHref="/dashboard/servicios" />
+
+      <div className="mx-auto max-w-lg lg:max-w-2xl px-4 lg:px-0 pt-3">
+        <ServiceWizardStepper currentStep={1} />
       </div>
 
-      <div className="mx-auto mt-8 max-w-2xl">
+      <div className="mx-auto max-w-lg lg:max-w-2xl px-4 lg:px-0 pb-6">
         <NuevoServicioStep1Form error={error} />
       </div>
-    </main>
+    </>
   );
 }

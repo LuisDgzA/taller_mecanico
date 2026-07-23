@@ -36,7 +36,7 @@ export function ServiciosSearch({
 
   return (
     <div className={cn("transition-opacity", isPending && "opacity-50")}>
-      <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto px-4 lg:px-8 py-3 scrollbar-none">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -54,7 +54,7 @@ export function ServiciosSearch({
         ))}
       </div>
 
-      <div className="relative px-4 pb-3">
+      <div className="relative px-4 lg:px-8 pb-3">
         <Search className="pointer-events-none absolute left-7 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
         <input
           className="h-10 w-full rounded-lg border border-outline-variant bg-surface-container-low pl-9 pr-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"

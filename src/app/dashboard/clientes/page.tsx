@@ -85,7 +85,7 @@ export default async function ClientesPage({
     <>
       <PageHeader title="Clientes" />
 
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-4 lg:px-8 pt-3 pb-2">
         <form action="/dashboard/clientes" method="get" className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
           <input
@@ -98,14 +98,14 @@ export default async function ClientesPage({
       </div>
 
       {error ? (
-        <div className="mx-4 mb-2 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
+        <div className="mx-4 lg:mx-8 mb-2 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
         </div>
       ) : null}
 
       {success ? (
         <div
-          className="mx-4 mb-2 rounded-lg px-4 py-3 text-sm"
+          className="mx-4 lg:mx-8 mb-2 rounded-lg px-4 py-3 text-sm"
           style={{ background: "#00573314", color: "#005a33" }}
         >
           {success}
@@ -113,7 +113,7 @@ export default async function ClientesPage({
       ) : null}
 
       {showNew ? (
-        <section className="border-b border-outline-variant bg-surface-container-low px-4 pb-5 pt-3">
+        <section className="border-b border-outline-variant bg-surface-container-low px-4 lg:px-8 pb-5 pt-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold text-on-surface">Nuevo cliente</p>
             <Link
@@ -127,13 +127,13 @@ export default async function ClientesPage({
         </section>
       ) : null}
 
-      <p className="px-4 pb-1 pt-3 text-xs text-on-surface-variant">
+      <p className="px-4 lg:px-8 pb-1 pt-3 text-xs text-on-surface-variant">
         {total} cliente{total === 1 ? "" : "s"}
         {query ? ` · "${query}"` : ""}
       </p>
 
       {clientes.length === 0 ? (
-        <div className="px-4 py-16 text-center text-sm text-on-surface-variant">
+        <div className="px-4 lg:px-8 py-16 text-center text-sm text-on-surface-variant">
           <p className="font-medium text-on-surface">
             {query ? "Sin resultados para esta búsqueda." : "No hay clientes registrados."}
           </p>
@@ -152,7 +152,7 @@ export default async function ClientesPage({
               <Link
                 key={cliente.id}
                 href={`/dashboard/clientes/${cliente.id}`}
-                className="flex items-center gap-3 px-4 py-3.5 transition-colors active:bg-surface-container-low"
+                className="flex items-center gap-3 px-4 lg:px-8 py-3.5 transition-colors active:bg-surface-container-low hover:bg-surface-container-low"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-on-surface">
@@ -174,14 +174,14 @@ export default async function ClientesPage({
         </div>
       )}
 
-      <div className="px-4">
+      <div className="px-4 lg:px-8">
         <Pagination buildHref={buildHref} page={page} pageCount={pageCount} />
       </div>
 
       {!showNew && canAddClientes ? (
         <Link
           href="/dashboard/clientes?new=1"
-          className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
           aria-label="Agregar cliente"
         >
           <Plus className="size-6" />

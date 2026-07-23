@@ -494,248 +494,270 @@ export default function PermisosPage() {
     <>
       <PageHeader title="Permisos" />
 
-      <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-        Gestión de accesos
-      </div>
+      {/*
+        Mobile: columna única — búsqueda → guardar → módulos.
+        Desktop: dos columnas — izquierda (búsqueda + guardar) | derecha (módulos).
+      */}
+      <div className="lg:grid lg:grid-cols-[minmax(320px,360px)_1fr] lg:gap-8 lg:items-start lg:px-8 lg:py-6">
 
-      <div className="px-4 py-3 text-sm text-on-surface-variant">
-        Configura los permisos por módulo para controlar lo que cada usuario puede
-        ver y ejecutar.
-      </div>
-
-      <section className="mx-4 mt-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-        <div className="relative" ref={containerRef}>
-          <label
-            className="mb-2 block text-sm font-medium text-on-surface"
-            htmlFor="usuario-typeahead"
-          >
-            Buscar usuario
-          </label>
-          <div className="flex h-10 items-center rounded-lg border border-outline-variant bg-surface-container-low px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
-            <Search className="size-4 text-on-surface-variant" />
-            <input
-              autoComplete="off"
-              className="h-full w-full bg-transparent px-3 text-sm text-on-surface outline-none"
-              id="usuario-typeahead"
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setQuery(nextValue);
-                if (selectedUser && nextValue.trim() !== selectedUser.nombre) {
-                  setSelectedUser(null);
-                  setSelectedPermissionIds([]);
-                }
-                setIsDropdownOpen(true);
-                if (nextValue.trim().length < 2) {
-                  setResults([]);
-                  setErrorMessage("");
-                }
-              }}
-              onFocus={() => setIsDropdownOpen(true)}
-              placeholder="Escribe nombre, correo o teléfono..."
-              value={query}
-            />
-            {isLoading ? (
-              <Loader2 className="size-4 animate-spin text-on-surface-variant" />
-            ) : selectedUser ? (
-              <button
-                aria-label="Limpiar usuario seleccionado"
-                className="rounded-full p-1 text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
-                onClick={clearSelectedUser}
-                type="button"
-              >
-                <X className="size-4" />
-              </button>
-            ) : null}
+        {/* ── Columna izquierda: búsqueda de usuario + guardar ── */}
+        <div>
+          {/* Encabezado de sección — solo mobile */}
+          <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant lg:hidden">
+            Gestión de accesos
+          </div>
+          <div className="px-4 py-3 text-sm text-on-surface-variant lg:hidden">
+            Configura los permisos por módulo para controlar lo que cada usuario puede
+            ver y ejecutar.
           </div>
 
-          {isDropdownOpen && effectiveQuery.length >= 2 ? (
-            <div className="absolute z-20 mt-2 w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-2 shadow-lg">
-              {errorMessage ? (
-                <p className="px-3 py-2 text-sm text-on-error-container">{errorMessage}</p>
-              ) : results.length === 0 && !isLoading ? (
-                <p className="px-3 py-2 text-sm text-on-surface-variant">
-                  No se encontraron usuarios.
-                </p>
-              ) : (
-                <ul className="max-h-60 overflow-y-auto">
-                  {results.map((usuario) => (
-                    <li key={usuario.id}>
-                      <button
-                        className="w-full rounded-lg px-3 py-2 text-left transition hover:bg-surface-container-low"
-                        onClick={() => selectUser(usuario)}
-                        type="button"
-                      >
-                        <p className="text-sm font-medium text-on-surface">{usuario.nombre}</p>
-                        <p className="text-xs text-on-surface-variant">{usuario.correo}</p>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+          {/* Card de búsqueda */}
+          <section className="mx-4 mt-2 lg:mx-0 lg:mt-0 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+            {/* Encabezado dentro de la card — solo desktop */}
+            <div className="hidden lg:block mb-4">
+              <h2 className="text-sm font-semibold text-on-surface">Gestión de Accesos</h2>
+              <p className="mt-1 text-xs text-on-surface-variant">
+                Configura los permisos por módulo para controlar lo que cada usuario
+                puede ver y ejecutar.
+              </p>
             </div>
-          ) : null}
+
+            <div className="relative" ref={containerRef}>
+              <label
+                className="mb-2 block text-sm font-medium text-on-surface"
+                htmlFor="usuario-typeahead"
+              >
+                Buscar usuario
+              </label>
+              <div className="flex h-10 items-center rounded-lg border border-outline-variant bg-surface-container-low px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+                <Search className="size-4 text-on-surface-variant" />
+                <input
+                  autoComplete="off"
+                  className="h-full w-full bg-transparent px-3 text-sm text-on-surface outline-none"
+                  id="usuario-typeahead"
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setQuery(nextValue);
+                    if (selectedUser && nextValue.trim() !== selectedUser.nombre) {
+                      setSelectedUser(null);
+                      setSelectedPermissionIds([]);
+                    }
+                    setIsDropdownOpen(true);
+                    if (nextValue.trim().length < 2) {
+                      setResults([]);
+                      setErrorMessage("");
+                    }
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  placeholder="Escribe nombre, correo o teléfono..."
+                  value={query}
+                />
+                {isLoading ? (
+                  <Loader2 className="size-4 animate-spin text-on-surface-variant" />
+                ) : selectedUser ? (
+                  <button
+                    aria-label="Limpiar usuario seleccionado"
+                    className="rounded-full p-1 text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
+                    onClick={clearSelectedUser}
+                    type="button"
+                  >
+                    <X className="size-4" />
+                  </button>
+                ) : null}
+              </div>
+
+              {isDropdownOpen && effectiveQuery.length >= 2 ? (
+                <div className="absolute z-20 mt-2 w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-2 shadow-lg">
+                  {errorMessage ? (
+                    <p className="px-3 py-2 text-sm text-on-error-container">{errorMessage}</p>
+                  ) : results.length === 0 && !isLoading ? (
+                    <p className="px-3 py-2 text-sm text-on-surface-variant">
+                      No se encontraron usuarios.
+                    </p>
+                  ) : (
+                    <ul className="max-h-60 overflow-y-auto">
+                      {results.map((usuario) => (
+                        <li key={usuario.id}>
+                          <button
+                            className="w-full rounded-lg px-3 py-2 text-left transition hover:bg-surface-container-low"
+                            onClick={() => selectUser(usuario)}
+                            type="button"
+                          >
+                            <p className="text-sm font-medium text-on-surface">{usuario.nombre}</p>
+                            <p className="text-xs text-on-surface-variant">{usuario.correo}</p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {selectedUser ? (
+              <div
+                className="mt-4 rounded-lg border px-4 py-3 text-sm"
+                style={{ background: "#00573314", borderColor: "#95cfab", color: "#005a33" }}
+              >
+                Permisos de: <span className="font-semibold">{selectedUser.nombre}</span> ({selectedUser.correo})
+                {isLoadingUserPermissions ? (
+                  <span className="ml-2">Cargando permisos actuales...</span>
+                ) : null}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
+                Busca y selecciona un usuario para asignar permisos.
+              </div>
+            )}
+          </section>
+
+          {/* Área de guardar */}
+          <div className="px-4 pb-6 pt-3 lg:px-0 lg:pb-0">
+            {saveMessage ? (
+              <div
+                className="mb-3 rounded-lg border px-4 py-3 text-sm"
+                role="status"
+                aria-live="polite"
+                style={{ background: "#00573314", borderColor: "#95cfab", color: "#005a33" }}
+              >
+                {saveMessage}
+              </div>
+            ) : null}
+            {saveError ? (
+              <div
+                className="mb-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container"
+                role="alert"
+              >
+                {saveError}
+              </div>
+            ) : null}
+            <button
+              className={`h-11 w-full rounded-lg px-5 text-sm font-semibold text-on-primary transition ${
+                canSavePermissions
+                  ? "bg-primary active:scale-[0.99]"
+                  : "cursor-not-allowed bg-outline-variant text-on-surface-variant"
+              }`}
+              disabled={!canSavePermissions}
+              onClick={() => { void savePermissions(); }}
+              type="button"
+            >
+              {isSavingPermissions ? "Guardando permisos..." : "Guardar permisos del usuario"}
+            </button>
+            {!canSavePermissions && saveLegend ? (
+              <p className="mt-2 text-xs text-on-surface-variant">{saveLegend}</p>
+            ) : null}
+          </div>
         </div>
 
-        {selectedUser ? (
-          <div
-            className="mt-4 rounded-lg border px-4 py-3 text-sm"
-            style={{ background: "#00573314", borderColor: "#95cfab", color: "#005a33" }}
-          >
-            Permisos de: <span className="font-semibold">{selectedUser.nombre}</span> ({selectedUser.correo})
-            {isLoadingUserPermissions ? (
-              <span className="ml-2">Cargando permisos actuales...</span>
-            ) : null}
+        {/* ── Columna derecha: módulos disponibles ── */}
+        <div>
+          <div className="mt-3 lg:mt-0 bg-surface-container-low lg:bg-transparent px-4 lg:px-0 py-2 lg:pb-4 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            Módulos disponibles
           </div>
-        ) : (
-          <div className="mt-4 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-            Busca y selecciona un usuario para asignar permisos.
-          </div>
-        )}
 
-      </section>
+          <section className="grid gap-3 px-4 lg:px-0 py-3 lg:py-0 md:grid-cols-2 lg:grid-cols-2">
+            {isLoadingModules ? (
+              <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-sm text-on-surface-variant">
+                Cargando modulos de permisos...
+              </div>
+            ) : modulesError ? (
+              <div className="rounded-lg bg-error-container p-4 text-sm text-on-error-container">
+                {modulesError}
+              </div>
+            ) : moduleCards.length === 0 ? (
+              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">
+                No hay modulos activos para configurar.
+              </div>
+            ) : moduleCards.map((moduleCard) => {
+              const ModuleIcon = resolveModuleIcon(moduleCard.icon, moduleCard.title);
+              const contentId = `permisos-${moduleCard.title.toLowerCase()}`;
+              const selectedPermissionSet = new Set(selectedPermissionIds);
+              const modulePermissionIds = moduleCard.permissions.map((p) => p.id);
+              const modulePermissionCount = modulePermissionIds.length;
+              const selectedModulePermissionCount = modulePermissionIds.filter((pid) =>
+                selectedPermissionSet.has(pid),
+              ).length;
+              const areAllModulePermissionsSelected =
+                modulePermissionCount > 0 && selectedModulePermissionCount === modulePermissionCount;
 
-      <div className="mt-3 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-        Módulos disponibles
-      </div>
+              return (
+                <details
+                  key={moduleCard.title}
+                  className="group overflow-hidden rounded-2xl border border-outline-variant/80 bg-surface-container-lowest shadow-sm transition hover:border-outline"
+                >
+                  <summary
+                    aria-controls={contentId}
+                    className="flex cursor-pointer list-none items-center justify-between bg-linear-to-br from-surface-container-low via-surface-container to-surface-container-high px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 group-open:border-b group-open:border-outline-variant [&::-webkit-details-marker]:hidden"
+                  >
+                    <div className="flex min-w-0 items-center gap-3 text-on-surface">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-outline-variant/80 bg-surface-container-lowest text-primary">
+                        <ModuleIcon className="size-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <h2 className="truncate text-base font-semibold tracking-tight">
+                          {moduleCard.title}
+                        </h2>
+                        <p className="text-xs text-on-surface-variant">
+                          {selectedModulePermissionCount}/{modulePermissionCount} permisos activos
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="flex size-8 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low text-on-surface transition group-hover:bg-surface-container">
+                        <ChevronDown className="size-4 transition-transform duration-200 group-open:rotate-180" />
+                      </span>
+                    </div>
+                  </summary>
 
-      <section className="grid gap-3 px-4 py-3 md:grid-cols-2 xl:grid-cols-3">
-        {isLoadingModules ? (
-          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-sm text-on-surface-variant">
-            Cargando modulos de permisos...
-          </div>
-        ) : modulesError ? (
-          <div className="rounded-lg bg-error-container p-4 text-sm text-on-error-container">
-            {modulesError}
-          </div>
-        ) : moduleCards.length === 0 ? (
-          <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">
-            No hay modulos activos para configurar.
-          </div>
-        ) : moduleCards.map((moduleCard) => {
-          const ModuleIcon = resolveModuleIcon(moduleCard.icon, moduleCard.title);
-          const contentId = `permisos-${moduleCard.title.toLowerCase()}`;
-          const selectedPermissionSet = new Set(selectedPermissionIds);
-          const modulePermissionIds = moduleCard.permissions.map((permission) => permission.id);
-          const modulePermissionCount = modulePermissionIds.length;
-          const selectedModulePermissionCount = modulePermissionIds.filter((permissionId) =>
-            selectedPermissionSet.has(permissionId),
-          ).length;
-          const areAllModulePermissionsSelected =
-            modulePermissionCount > 0 && selectedModulePermissionCount === modulePermissionCount;
-
-          return (
-            <details
-              key={moduleCard.title}
-              className="group overflow-hidden rounded-2xl border border-outline-variant/80 bg-surface-container-lowest shadow-sm transition hover:border-outline"
-            >
-              <summary
-                aria-controls={contentId}
-                className="flex cursor-pointer list-none items-center justify-between bg-linear-to-br from-surface-container-low via-surface-container to-surface-container-high px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 group-open:border-b group-open:border-outline-variant [&::-webkit-details-marker]:hidden"
-              >
-                <div className="flex min-w-0 items-center gap-3 text-on-surface">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-outline-variant/80 bg-surface-container-lowest text-primary">
-                    <ModuleIcon className="size-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <h2 className="truncate text-base font-semibold tracking-tight">
-                      {moduleCard.title}
-                    </h2>
-                    <p className="text-xs text-on-surface-variant">
-                      {selectedModulePermissionCount}/{modulePermissionCount} permisos activos
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <span className="flex size-8 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low text-on-surface transition group-hover:bg-surface-container">
-                    <ChevronDown className="size-4 transition-transform duration-200 group-open:rotate-180" />
-                  </span>
-                </div>
-              </summary>
-
-              <div className="overflow-hidden" id={contentId}>
-                <div className="space-y-3 p-4">
-                  <div className="flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2">
-                    <label className="flex items-center gap-3 text-on-surface">
-                      <input
-                        checked={areAllModulePermissionsSelected}
-                        className="size-4 rounded border-outline-variant accent-primary"
-                        onChange={(event) => toggleModulePermissions(modulePermissionIds, event.target.checked)}
-                        type="checkbox"
-                      />
-                      <span className="text-sm font-medium leading-tight">Asignar todos</span>
-                    </label>
-                    <span className="text-xs font-medium text-on-surface-variant">
-                      {modulePermissionCount} acciones
-                    </span>
-                  </div>
-
-                  <div className="grid gap-2">
-                    {moduleCard.permissions.map((permission) => {
-                      const isChecked = selectedPermissionSet.has(permission.id);
-
-                      return (
-                        <label
-                          key={`${moduleCard.title}-${permission.id}`}
-                          className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm leading-tight transition ${
-                            isChecked
-                              ? "border-primary/25 bg-primary/8 text-on-surface"
-                              : "border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
-                          }`}
-                        >
+                  <div className="overflow-hidden" id={contentId}>
+                    <div className="space-y-3 p-4">
+                      <div className="flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2">
+                        <label className="flex items-center gap-3 text-on-surface">
                           <input
+                            checked={areAllModulePermissionsSelected}
                             className="size-4 rounded border-outline-variant accent-primary"
-                            checked={isChecked}
-                            onChange={(event) => togglePermission(permission.id, event.target.checked)}
+                            onChange={(event) => toggleModulePermissions(modulePermissionIds, event.target.checked)}
                             type="checkbox"
                           />
-                          <span className="leading-tight">{permission.nombre}</span>
+                          <span className="text-sm font-medium leading-tight">Asignar todos</span>
                         </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </details>
-          );
-        })}
-      </section>
+                        <span className="text-xs font-medium text-on-surface-variant">
+                          {modulePermissionCount} acciones
+                        </span>
+                      </div>
 
-      <div className="px-4 pb-6 pt-2">
-        {saveMessage ? (
-          <div
-            className="mb-3 rounded-lg border px-4 py-3 text-sm"
-            role="status"
-            aria-live="polite"
-            style={{ background: "#00573314", borderColor: "#95cfab", color: "#005a33" }}
-          >
-            {saveMessage}
-          </div>
-        ) : null}
-        {saveError ? (
-          <div
-            className="mb-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container"
-            role="alert"
-          >
-            {saveError}
-          </div>
-        ) : null}
-        <button
-          className={`h-11 w-full rounded-lg px-5 text-sm font-semibold text-on-primary transition ${
-            canSavePermissions
-              ? "bg-primary active:scale-[0.99]"
-              : "cursor-not-allowed bg-outline-variant text-on-surface-variant"
-          }`}
-          disabled={!canSavePermissions}
-          onClick={() => {
-            void savePermissions();
-          }}
-          type="button"
-        >
-          {isSavingPermissions ? "Guardando permisos..." : "Guardar permisos del usuario"}
-        </button>
-        {!canSavePermissions && saveLegend ? (
-          <p className="mt-2 text-xs text-on-surface-variant">{saveLegend}</p>
-        ) : null}
+                      <div className="grid gap-2">
+                        {moduleCard.permissions.map((permission) => {
+                          const isChecked = selectedPermissionSet.has(permission.id);
+
+                          return (
+                            <label
+                              key={`${moduleCard.title}-${permission.id}`}
+                              className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm leading-tight transition ${
+                                isChecked
+                                  ? "border-primary/25 bg-primary/8 text-on-surface"
+                                  : "border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
+                              }`}
+                            >
+                              <input
+                                className="size-4 rounded border-outline-variant accent-primary"
+                                checked={isChecked}
+                                onChange={(event) => togglePermission(permission.id, event.target.checked)}
+                                type="checkbox"
+                              />
+                              <span className="leading-tight">{permission.nombre}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              );
+            })}
+          </section>
+        </div>
+
       </div>
     </>
   );

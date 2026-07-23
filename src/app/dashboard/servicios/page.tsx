@@ -92,7 +92,7 @@ export default async function ServiciosPage({
       <ServiciosSearch defaultSearch={search} defaultStatus={status} />
 
       {list.length === 0 ? (
-        <div className="px-4 py-16 text-center text-sm text-on-surface-variant">
+        <div className="px-4 lg:px-8 py-16 text-center text-sm text-on-surface-variant">
           <p className="font-medium text-on-surface">
             {search || status
               ? "Sin resultados para estos filtros."
@@ -110,7 +110,7 @@ export default async function ServiciosPage({
             <Link
               key={s.id}
               href={`/dashboard/servicios/${s.id}`}
-              className="flex flex-col gap-1.5 px-4 py-3.5 transition-colors active:bg-surface-container-low"
+              className="flex flex-col gap-1.5 px-4 lg:px-8 py-3.5 transition-colors active:bg-surface-container-low hover:bg-surface-container-low"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -149,7 +149,7 @@ export default async function ServiciosPage({
       {canAddServicios ? (
         <Link
           href="/dashboard/servicios/nuevo"
-          className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
           aria-label="Agregar servicio"
         >
           <Plus className="size-6" />

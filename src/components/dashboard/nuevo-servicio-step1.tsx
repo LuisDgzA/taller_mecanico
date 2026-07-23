@@ -50,22 +50,24 @@ function VehiculoSummary({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+      <span className="rounded border border-outline-variant px-2 py-0.5 font-mono text-xs font-semibold uppercase tracking-widest text-on-surface">
         {placa}
       </span>
-      <span className="text-sm text-slate-700">
+      <span className="text-sm text-on-surface">
         {[marca, modelo].filter(Boolean).join(" ") || "Sin datos"}
       </span>
-      {color ? <span className="text-sm text-slate-400">{color}</span> : null}
-      {anio ? <span className="text-sm text-slate-400">{anio}</span> : null}
+      {color ? <span className="text-sm text-on-surface-variant">{color}</span> : null}
+      {anio ? <span className="text-sm text-on-surface-variant">{anio}</span> : null}
     </div>
   );
 }
 
+const inputClass =
+  "mt-2 h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary";
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 export function NuevoServicioStep1Form({ error }: { error?: string }) {
-  // Plate lookup state
   const [placaQuery, setPlacaQuery] = useState("");
   const [plateResult, setPlateResult] = useState<{
     found: boolean;
@@ -73,75 +75,46 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
   } | null>(null);
   const [plateError, setPlateError] = useState<string | null>(null);
 
-  // Client search state
   const [clienteQuery, setClienteQuery] = useState("");
   const [clienteResults, setClienteResults] = useState<ClienteResult[]>([]);
   const [clienteError, setClienteError] = useState<string | null>(null);
   const [selectedCliente, setSelectedCliente] = useState<ClienteResult | null>(null);
 
-  // Vehicle selection from a known client's list
   // null = none picked yet, -1 = "add new vehicle", >0 = existing vehicle id
   const [selectedVehiculoId, setSelectedVehiculoId] = useState<number | null>(null);
 
   const [isPending, startTransition] = useTransition();
 
-  // ── Derived state ────────────────────────────────────────────────────────
-
-  // Vehicle that came from the plate lookup
   const plateVehiculo = plateResult?.found ? plateResult.vehiculo : null;
-
-  // Vehicle that came from picking one of the client's existing vehicles
   const clientVehiculo =
     selectedCliente && selectedVehiculoId && selectedVehiculoId > 0
       ? selectedCliente.vehiculos.find((v) => v.id === selectedVehiculoId) ?? null
       : null;
-
-  // The fully-resolved vehicle (we know its ID → skip creation in the action)
   const resolvedVehiculo = plateVehiculo ?? clientVehiculo ?? null;
-
-  // The resolved client (from plate lookup or client search)
   const resolvedCliente = plateVehiculo?.cliente ?? selectedCliente ?? null;
 
-  // Show vehicle form when: no resolved vehicle yet AND
-  // either nothing has been searched, or the plate was not found,
-  // or a client was selected and "nuevo vehículo" was chosen
   const showVehicleForm =
     !resolvedVehiculo &&
     (selectedVehiculoId === -1 || !selectedCliente);
-
-  // Show client form only when there's no client resolved at all
   const showClientForm = !resolvedCliente && showVehicleForm;
-
-  // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handlePlateLookup = () => {
     const query = placaQuery.trim();
     if (!query) return;
-
-    // Clear client search state when doing a plate lookup
     setSelectedCliente(null);
     setClienteResults([]);
     setClienteQuery("");
     setSelectedVehiculoId(null);
-
     startTransition(async () => {
       setPlateError(null);
       try {
-        const res = await fetch(
-          `/api/vehiculos/search?placa=${encodeURIComponent(query)}`,
-        );
-        const data = (await res.json()) as {
-          found: boolean;
-          vehiculo?: PlateVehiculo;
-          error?: string;
-        };
+        const res = await fetch(`/api/vehiculos/search?placa=${encodeURIComponent(query)}`);
+        const data = (await res.json()) as { found: boolean; vehiculo?: PlateVehiculo; error?: string };
         if (!res.ok) throw new Error(data.error ?? "No se pudo consultar.");
         setPlateResult(data);
       } catch (e) {
         setPlateResult(null);
-        setPlateError(
-          e instanceof Error ? e.message : "Error al buscar la placa.",
-        );
+        setPlateError(e instanceof Error ? e.message : "Error al buscar la placa.");
       }
     });
   };
@@ -149,32 +122,22 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
   const handleClienteSearch = () => {
     const query = clienteQuery.trim();
     if (query.length < 2) return;
-
-    // Clear plate lookup state when doing a client search
     setPlateResult(null);
     setPlacaQuery("");
     setSelectedCliente(null);
     setSelectedVehiculoId(null);
-
     startTransition(async () => {
       setClienteError(null);
       try {
-        const res = await fetch(
-          `/api/clientes/search?q=${encodeURIComponent(query)}`,
-        );
-        const data = (await res.json()) as {
-          clientes?: ClienteResult[];
-          error?: string;
-        };
+        const res = await fetch(`/api/clientes/search?q=${encodeURIComponent(query)}`);
+        const data = (await res.json()) as { clientes?: ClienteResult[]; error?: string };
         if (!res.ok) throw new Error(data.error ?? "No se pudo buscar.");
         setClienteResults(data.clientes ?? []);
         if ((data.clientes ?? []).length === 0) {
           setClienteError("No se encontraron clientes con ese nombre o teléfono.");
         }
       } catch (e) {
-        setClienteError(
-          e instanceof Error ? e.message : "Error al buscar clientes.",
-        );
+        setClienteError(e instanceof Error ? e.message : "Error al buscar clientes.");
       }
     });
   };
@@ -196,18 +159,14 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
     setSelectedVehiculoId(null);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
-    <form action={initServicioStep1Action} className="space-y-5">
-      {/* Action-level error (from redirect) */}
+    <form action={initServicioStep1Action} className="space-y-4">
       {error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
         </div>
       ) : null}
 
-      {/* ── Hidden IDs passed to the Server Action ── */}
       {resolvedVehiculo && (
         <input name="vehiculoId" type="hidden" value={resolvedVehiculo.id} />
       )}
@@ -215,31 +174,26 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
         <input name="clienteId" type="hidden" value={resolvedCliente.id} />
       )}
 
-      {/* ════════════════════════════════════════════
-          SEARCH SECTION — Plate OR Client
-      ════════════════════════════════════════════ */}
+      {/* ── Search section: plate OR client ── */}
       {!resolvedVehiculo && !selectedCliente ? (
-        <div className="space-y-4 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+        <div className="space-y-3 rounded-xl border border-outline-variant bg-surface-container-low p-4">
           {/* Plate search */}
-          <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
+            <p className="text-xs uppercase tracking-wider text-on-surface-variant">
               Busca por placa
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
-                className="h-12 flex-1 rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-950"
+                className="h-11 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
                 placeholder="Ej. ABC-123-A"
                 value={placaQuery}
                 onChange={(e) => setPlacaQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handlePlateLookup();
-                  }
+                  if (e.key === "Enter") { e.preventDefault(); handlePlateLookup(); }
                 }}
               />
               <button
-                className="h-12 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400 sm:min-w-28"
+                className="h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-60 sm:min-w-28"
                 disabled={isPending || !placaQuery.trim()}
                 type="button"
                 onClick={handlePlateLookup}
@@ -248,42 +202,39 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
               </button>
             </div>
             {plateError && (
-              <p className="mt-2 text-sm text-rose-700">{plateError}</p>
+              <p className="mt-2 text-sm text-error">{plateError}</p>
             )}
             {plateResult && !plateResult.found && (
-              <p className="mt-2 text-sm text-amber-700">
+              <p className="mt-2 text-sm text-on-surface-variant">
                 Placa no registrada — completa los datos abajo.
               </p>
             )}
           </div>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 text-xs text-slate-400">
-            <span className="flex-1 border-t border-slate-200" />
+          <div className="flex items-center gap-3 text-xs text-on-surface-variant">
+            <span className="flex-1 border-t border-outline-variant" />
             O BIEN
-            <span className="flex-1 border-t border-slate-200" />
+            <span className="flex-1 border-t border-outline-variant" />
           </div>
 
           {/* Client search */}
-          <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
+            <p className="text-xs uppercase tracking-wider text-on-surface-variant">
               Busca el cliente por nombre o teléfono
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
-                className="h-12 flex-1 rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-950"
+                className="h-11 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
                 placeholder="Ej. Aldo o 9991234567"
                 value={clienteQuery}
                 onChange={(e) => setClienteQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleClienteSearch();
-                  }
+                  if (e.key === "Enter") { e.preventDefault(); handleClienteSearch(); }
                 }}
               />
               <button
-                className="h-12 rounded-2xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400 sm:min-w-28"
+                className="h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-60 sm:min-w-28"
                 disabled={isPending || clienteQuery.trim().length < 2}
                 type="button"
                 onClick={handleClienteSearch}
@@ -292,28 +243,27 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
               </button>
             </div>
             {clienteError && (
-              <p className="mt-2 text-sm text-amber-700">{clienteError}</p>
+              <p className="mt-2 text-sm text-on-surface-variant">{clienteError}</p>
             )}
 
-            {/* Client results list */}
             {clienteResults.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {clienteResults.map((cliente) => (
                   <li key={cliente.id}>
                     <button
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm transition hover:border-slate-950 hover:bg-slate-50"
+                      className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-left text-sm transition hover:border-primary hover:bg-surface-container-low"
                       type="button"
                       onClick={() => handleSelectCliente(cliente)}
                     >
-                      <span className="font-medium">
+                      <span className="font-medium text-on-surface">
                         {cliente.nombre ?? "Sin nombre"}
                       </span>
                       {cliente.telefono && (
-                        <span className="ml-2 text-slate-400">
+                        <span className="ml-2 text-on-surface-variant">
                           · {cliente.telefono}
                         </span>
                       )}
-                      <span className="ml-2 text-xs text-slate-400">
+                      <span className="ml-2 text-xs text-on-surface-variant">
                         {cliente.vehiculos.length} vehículo
                         {cliente.vehiculos.length !== 1 ? "s" : ""}
                       </span>
@@ -326,27 +276,25 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
         </div>
       ) : null}
 
-      {/* ════════════════════════════════════════════
-          CLIENT SELECTED — show vehicle picker
-      ════════════════════════════════════════════ */}
+      {/* ── Client selected — vehicle picker ── */}
       {selectedCliente && !resolvedVehiculo ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 space-y-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+              <p className="text-xs uppercase tracking-wider text-on-surface-variant">
                 Cliente seleccionado
               </p>
-              <p className="mt-1 font-medium">
+              <p className="mt-1 font-medium text-on-surface">
                 {selectedCliente.nombre ?? "Sin nombre"}
               </p>
               {selectedCliente.telefono && (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-on-surface-variant">
                   {selectedCliente.telefono}
                 </p>
               )}
             </div>
             <button
-              className="text-xs text-slate-400 underline hover:text-slate-700"
+              className="text-xs text-on-surface-variant underline hover:text-on-surface"
               type="button"
               onClick={handleClearAll}
             >
@@ -355,17 +303,17 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
           </div>
 
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+            <p className="text-xs uppercase tracking-wider text-on-surface-variant">
               Selecciona un vehículo
             </p>
             <div className="mt-2 space-y-2">
               {selectedCliente.vehiculos.map((v) => (
                 <button
                   key={v.id}
-                  className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                  className={`w-full rounded-lg border px-4 py-3 text-left text-sm transition ${
                     selectedVehiculoId === v.id
-                      ? "border-slate-950 bg-slate-950 text-white"
-                      : "border-slate-200 bg-slate-50 hover:border-slate-950"
+                      ? "border-primary bg-primary text-on-primary"
+                      : "border-outline-variant bg-surface-container-low text-on-surface hover:border-primary"
                   }`}
                   type="button"
                   onClick={() => setSelectedVehiculoId(v.id)}
@@ -379,12 +327,11 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 </button>
               ))}
 
-              {/* Option: new vehicle */}
               <button
-                className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                className={`w-full rounded-lg border px-4 py-3 text-left text-sm transition ${
                   selectedVehiculoId === -1
-                    ? "border-slate-950 bg-slate-950 text-white"
-                    : "border-dashed border-slate-300 hover:border-slate-950"
+                    ? "border-primary bg-primary text-on-primary"
+                    : "border-dashed border-outline-variant text-on-surface hover:border-primary"
                 }`}
                 type="button"
                 onClick={() => setSelectedVehiculoId(-1)}
@@ -396,14 +343,15 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
         </div>
       ) : null}
 
-      {/* ════════════════════════════════════════════
-          RESOLVED VEHICLE — show read-only summary
-      ════════════════════════════════════════════ */}
+      {/* ── Resolved vehicle — read-only summary ── */}
       {resolvedVehiculo ? (
-        <div className="sticky top-3 z-10 rounded-[1.75rem] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+        <div
+          className="sticky top-3 z-10 rounded-xl border p-4"
+          style={{ background: "#00573314", color: "#005a33", borderColor: "#00573340" }}
+        >
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.25em] text-emerald-700">
+              <p className="text-xs uppercase tracking-wider opacity-70">
                 Vehículo confirmado
               </p>
               <VehiculoSummary
@@ -414,19 +362,17 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 anio={"anio" in resolvedVehiculo ? (resolvedVehiculo.anio as number | null) : null}
               />
               {resolvedCliente && (
-                <p className="text-sm text-emerald-800">
+                <p className="text-sm">
                   Cliente:{" "}
                   <span className="font-medium">
                     {resolvedCliente.nombre ?? "Sin nombre"}
                   </span>
-                  {resolvedCliente.telefono
-                    ? ` · ${resolvedCliente.telefono}`
-                    : ""}
+                  {resolvedCliente.telefono ? ` · ${resolvedCliente.telefono}` : ""}
                 </p>
               )}
             </div>
             <button
-              className="text-xs text-emerald-600 underline hover:text-emerald-800"
+              className="text-xs underline opacity-70 hover:opacity-100"
               type="button"
               onClick={handleClearAll}
             >
@@ -436,49 +382,33 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
         </div>
       ) : null}
 
-      {/* ════════════════════════════════════════════
-          VEHICLE FORM — new vehicle entry
-      ════════════════════════════════════════════ */}
+      {/* ── Vehicle form — new vehicle entry ── */}
       {showVehicleForm ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+          <p className="text-xs uppercase tracking-wider text-on-surface-variant">
             Datos del vehículo
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Placa *
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                defaultValue={placaQuery}
-                name="placa"
-                required
-              />
+              <input className={inputClass} defaultValue={placaQuery} name="placa" required />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Marca
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="marca"
-              />
+              <input className={inputClass} name="marca" />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Modelo
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="modelo"
-              />
+              <input className={inputClass} name="modelo" />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Color
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="color"
-              />
+              <input className={inputClass} name="color" />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Año
               <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
+                className={inputClass}
                 max={new Date().getFullYear()}
                 min={1900}
                 name="anio"
@@ -489,48 +419,34 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
         </div>
       ) : null}
 
-      {/* ════════════════════════════════════════════
-          CLIENT FORM — only when no client resolved
-      ════════════════════════════════════════════ */}
+      {/* ── Client form — only when no client resolved ── */}
       {showClientForm ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+          <p className="text-xs uppercase tracking-wider text-on-surface-variant">
             Datos del cliente
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700 md:col-span-2">
+            <label className="text-sm font-medium text-on-surface md:col-span-2">
               Nombre
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="nombre"
-                required
-              />
+              <input className={inputClass} name="nombre" required />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Teléfono
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="telefono"
-              />
+              <input className={inputClass} name="telefono" />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-on-surface">
               Correo
-              <input
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 px-4 outline-none transition focus:border-slate-950"
-                name="correo"
-                type="email"
-              />
+              <input className={inputClass} name="correo" type="email" />
             </label>
           </div>
         </div>
       ) : null}
 
-      {/* Submit — only enabled when we have enough to proceed */}
       {(resolvedVehiculo ||
         (selectedCliente && selectedVehiculoId !== null) ||
         (!selectedCliente && !plateResult?.found)) ? (
         <ActionButton
-          className="min-h-13 w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-400"
+          className="h-11 w-full rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-60"
           disabled={!!(selectedCliente && selectedVehiculoId === null)}
         >
           Continuar →
