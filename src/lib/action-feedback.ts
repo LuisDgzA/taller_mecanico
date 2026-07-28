@@ -7,7 +7,10 @@ export function buildActionRedirect(
   basePath: string,
   options: { error?: string; success?: string },
 ) {
-  const searchParams = new URLSearchParams();
+  const qIdx = basePath.indexOf("?");
+  const path = qIdx === -1 ? basePath : basePath.slice(0, qIdx);
+  const existing = qIdx === -1 ? "" : basePath.slice(qIdx + 1);
+  const searchParams = new URLSearchParams(existing);
 
   if (options.error) {
     searchParams.set("error", options.error);
@@ -18,5 +21,5 @@ export function buildActionRedirect(
   }
 
   const query = searchParams.toString();
-  return query ? `${basePath}?${query}` : basePath;
+  return query ? `${path}?${query}` : path;
 }

@@ -54,8 +54,9 @@ export function ServiciosSearch({
         ))}
       </div>
 
-      <div className="relative px-4 lg:px-8 pb-3">
-        <Search className="pointer-events-none absolute left-7 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
+      <div className="px-4 lg:px-8 pb-3">
+        <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
         <input
           className="h-10 w-full rounded-lg border border-outline-variant bg-surface-container-low pl-9 pr-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
           placeholder="Buscar por placa o descripción…"
@@ -65,6 +66,7 @@ export function ServiciosSearch({
             if (e.key === "Enter") navigate(search, defaultStatus);
           }}
         />
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { ActionButton } from "@/components/ui/action-button";
 import { DescripcionField } from "@/components/dashboard/descripcion-field";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ServiceWizardStepper } from "@/components/dashboard/service-wizard-stepper";
+import { FotosUploader } from "@/components/dashboard/fotos-uploader";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
 
@@ -145,22 +146,8 @@ export default async function NuevoServicioPage({
                 </span>
               </div>
               <div className="p-4">
-                <label
-                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-outline-variant px-4 py-8 text-center transition hover:border-primary"
-                  htmlFor="fotos-input"
-                >
-                  <Camera className="size-6 text-on-surface-variant" />
-                  <span className="text-sm font-medium text-on-surface-variant">Añadir</span>
-                </label>
-                <input
-                  accept="image/*"
-                  className="hidden"
-                  id="fotos-input"
-                  multiple
-                  name="imagenes"
-                  type="file"
-                />
-                <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">
+                <FotosUploader />
+                <p className="mt-3 text-xs leading-relaxed text-on-surface-variant">
                   Agregue fotos del estado general del vehículo y daños específicos
                   reportados antes de iniciar el trabajo.
                 </p>
