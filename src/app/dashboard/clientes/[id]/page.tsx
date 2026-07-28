@@ -141,7 +141,7 @@ export default async function ClienteDetailPage({
             <input
               name="redirectTo"
               type="hidden"
-              value={`/dashboard/clientes/${clienteId}?success=Cliente+actualizado`}
+              value={`/dashboard/clientes/${clienteId}`}
             />
             <input name="id" type="hidden" value={clienteId} />
 
@@ -370,7 +370,7 @@ export default async function ClienteDetailPage({
                     {canAddServicios ? (
                       <Link
                         href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${v.id}`}
-                        className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium text-on-primary"
+                        className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium !text-white"
                       >
                         <Wrench className="size-3.5" />
                         Crear servicio

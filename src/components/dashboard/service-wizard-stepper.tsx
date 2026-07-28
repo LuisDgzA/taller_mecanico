@@ -1,17 +1,19 @@
 import { Check } from "lucide-react";
+import { Fragment } from "react";
 
 const STEPS = ["Identificación", "Detalles", "Revisión"] as const;
 
 export function ServiceWizardStepper({ currentStep }: { currentStep: 1 | 2 | 3 }) {
   return (
-    <div className="flex items-start px-1 py-3">
+    <div className="flex items-start py-3">
       {STEPS.map((label, idx) => {
         const num = idx + 1;
         const completed = num < currentStep;
         const active = num === currentStep;
+        const isLast = idx === STEPS.length - 1;
 
         return (
-          <div key={label} className="flex flex-1 items-start">
+          <Fragment key={label}>
             <div className="flex flex-col items-center gap-1.5">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
@@ -31,14 +33,14 @@ export function ServiceWizardStepper({ currentStep }: { currentStep: 1 | 2 | 3 }
               </span>
             </div>
 
-            {idx < STEPS.length - 1 && (
+            {!isLast && (
               <div
                 className={`mx-2 mt-4 flex-1 border-t-2 ${
                   num < currentStep ? "border-primary" : "border-slate-200"
                 }`}
               />
             )}
-          </div>
+          </Fragment>
         );
       })}
     </div>

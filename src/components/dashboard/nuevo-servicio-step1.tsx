@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 
+import { Search } from "lucide-react";
+
 import { initServicioStep1Action } from "@/actions/servicios";
 import { ActionButton } from "@/components/ui/action-button";
 
@@ -182,7 +184,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
             <p className="text-xs uppercase tracking-wider text-on-surface-variant">
               Busca por placa
             </p>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-3 flex gap-2">
               <input
                 className="h-11 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
                 placeholder="Ej. ABC-123-A"
@@ -193,12 +195,17 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 }}
               />
               <button
-                className="h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-60 sm:min-w-28"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary transition hover:opacity-90 disabled:opacity-60 sm:w-auto sm:px-4"
                 disabled={isPending || !placaQuery.trim()}
                 type="button"
                 onClick={handlePlateLookup}
               >
-                {isPending ? "…" : "Buscar"}
+                {isPending ? <span className="text-sm">…</span> : (
+                  <>
+                    <Search className="size-4 sm:hidden" />
+                    <span className="hidden text-sm font-semibold sm:block">Buscar</span>
+                  </>
+                )}
               </button>
             </div>
             {plateError && (
@@ -223,7 +230,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
             <p className="text-xs uppercase tracking-wider text-on-surface-variant">
               Busca el cliente por nombre o teléfono
             </p>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <div className="mt-3 flex gap-2">
               <input
                 className="h-11 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
                 placeholder="Ej. Aldo o 9991234567"
@@ -234,12 +241,17 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 }}
               />
               <button
-                className="h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-60 sm:min-w-28"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary transition hover:opacity-90 disabled:opacity-60 sm:w-auto sm:px-4"
                 disabled={isPending || clienteQuery.trim().length < 2}
                 type="button"
                 onClick={handleClienteSearch}
               >
-                {isPending ? "…" : "Buscar"}
+                {isPending ? <span className="text-sm">…</span> : (
+                  <>
+                    <Search className="size-4 sm:hidden" />
+                    <span className="hidden text-sm font-semibold sm:block">Buscar</span>
+                  </>
+                )}
               </button>
             </div>
             {clienteError && (
