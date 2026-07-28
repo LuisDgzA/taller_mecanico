@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-import { dashboardNavItems } from "./navigation-items";
+import { dashboardNavItems, isActivePath } from "./navigation-items";
 
 type BottomNavProps = {
   className?: string;
@@ -14,13 +14,6 @@ type BottomNavProps = {
   canViewUsuarios?: boolean;
   canViewPermisos?: boolean;
 };
-
-function isActivePath(pathname: string, href: string) {
-  if (href === "/dashboard") {
-    return pathname === href;
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 export function BottomNav({
   className,
@@ -53,7 +46,7 @@ export function BottomNav({
   return (
     <nav
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex items-stretch border-t border-outline-variant bg-surface-container-lowest bottom-nav-safe",
+        "fixed inset-x-0 bottom-0 z-50 flex items-stretch border-t border-outline-variant bg-surface-container-lowest bottom-nav-safe lg:hidden",
         className,
       )}
     >

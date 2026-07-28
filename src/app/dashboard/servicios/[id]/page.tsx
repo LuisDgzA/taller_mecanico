@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Flag } from "lucide-react";
+import { Calendar, Camera, Car, FileText, Flag, Pencil } from "lucide-react";
 
 import { createBitacoraAction, deleteBitacoraAction } from "@/actions/bitacoras";
 import { updateServicioStatusAction } from "@/actions/servicios";
@@ -83,15 +83,6 @@ function SectionHeader({ children }: { children: ReactNode }) {
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3">
-      <span className="shrink-0 text-xs text-on-surface-variant">{label}</span>
-      <span className="text-right text-sm text-on-surface">{children}</span>
-    </div>
-  );
-}
-
 export default async function ServicioDetailPage({
   params,
   searchParams,
@@ -163,9 +154,9 @@ export default async function ServicioDetailPage({
 
   // ── Tab: Información ──────────────────────────────────────────────
   const infoContent = (
-    <div>
-      {/* Status + advance action */}
-      <div className="flex items-center gap-3 border-b border-outline-variant px-4 py-3">
+    <div className="divide-y divide-outline-variant">
+      {/* Status + acciones */}
+      <div className="flex flex-wrap items-center gap-2 px-4 py-4">
         <ServicioStatusBadge status={servicio.status} />
         {nextStatus ? (
           <form action={updateServicioStatusAction} className="flex-1">
@@ -186,88 +177,135 @@ export default async function ServicioDetailPage({
         ) : null}
       </div>
 
-      {/* Vehículo */}
-      <SectionHeader>Vehículo</SectionHeader>
-      <div className="divide-y divide-outline-variant">
-        <InfoRow label="Placa">
-          <span className="rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
-            {servicio.vehiculo?.placa ?? "—"}
-          </span>
-        </InfoRow>
-        <InfoRow label="Marca / Modelo">
-          {[servicio.vehiculo?.marca, servicio.vehiculo?.modelo]
-            .filter(Boolean)
-            .join(" ") || "Sin datos"}
-        </InfoRow>
-        {servicio.vehiculo?.color ? (
-          <InfoRow label="Color">{servicio.vehiculo.color}</InfoRow>
-        ) : null}
-        {servicio.vehiculo?.anio ? (
-          <InfoRow label="Año">{servicio.vehiculo.anio}</InfoRow>
-        ) : null}
-      </div>
+      {/* Vehículo + Cliente */}
+      <div>
+        <div className="flex items-center gap-2 px-4 py-3">
+          <Car className="size-4 text-primary" />
+          <span className="text-sm font-semibold text-on-surface">Vehículo Seleccionado</span>
+        </div>
 
-      {/* Cliente */}
-      {servicio.vehiculo?.cliente ? (
-        <>
-          <SectionHeader>Cliente</SectionHeader>
-          <div className="divide-y divide-outline-variant">
-            <InfoRow label="Nombre">
-              {servicio.vehiculo.cliente.nombre ?? "Sin nombre"}
-            </InfoRow>
-            {servicio.vehiculo.cliente.telefono ? (
-              <InfoRow label="Teléfono">
+        {/* Placa + Modelo */}
+        <div className="grid grid-cols-2 gap-4 border-b border-outline-variant px-4 pb-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+              Placa
+            </p>
+            <p className="text-2xl font-bold tracking-wide text-on-surface">
+              {servicio.vehiculo?.placa ?? "—"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+              Modelo
+            </p>
+            <p className="mt-0.5 text-sm font-semibold text-on-surface">
+              {[servicio.vehiculo?.marca, servicio.vehiculo?.modelo, servicio.vehiculo?.anio]
+                .filter(Boolean)
+                .join(" ") || "Sin datos"}
+            </p>
+            {servicio.vehiculo?.color ? (
+              <p className="text-xs text-on-surface-variant">{servicio.vehiculo.color}</p>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Cliente */}
+        {servicio.vehiculo?.cliente ? (
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container text-sm font-bold text-on-surface">
+              {servicio.vehiculo.cliente.nombre?.charAt(0).toUpperCase() ?? "?"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+                Cliente
+              </p>
+              <p className="text-sm font-semibold text-on-surface">
+                {servicio.vehiculo.cliente.nombre ?? "Sin nombre"}
+              </p>
+              {servicio.vehiculo.cliente.telefono ? (
                 <a
+                  className="text-xs text-primary"
                   href={`tel:${servicio.vehiculo.cliente.telefono}`}
-                  className="text-primary"
                 >
                   {servicio.vehiculo.cliente.telefono}
                 </a>
-              </InfoRow>
-            ) : null}
+              ) : null}
+            </div>
+            <Link
+              className="shrink-0 text-on-surface-variant transition hover:text-primary"
+              href={`/dashboard/clientes/${servicio.vehiculo.cliente.id}`}
+            >
+              <Pencil className="size-4" />
+            </Link>
           </div>
-        </>
-      ) : null}
+        ) : null}
+      </div>
 
       {/* Fechas */}
-      <SectionHeader>Fechas</SectionHeader>
-      <div className="divide-y divide-outline-variant">
-        <InfoRow label="Ingreso">{formatDate(servicio.fecha_inicio)}</InfoRow>
-        {servicio.recibido_por?.nombre ? (
-          <InfoRow label="Recibió">{servicio.recibido_por.nombre}</InfoRow>
-        ) : null}
-        {servicio.fecha_fin ? (
-          <InfoRow label="Finalizado">{formatDate(servicio.fecha_fin)}</InfoRow>
-        ) : null}
+      <div>
+        <div className="flex items-center gap-2 px-4 py-3">
+          <Calendar className="size-4 text-primary" />
+          <span className="text-sm font-semibold text-on-surface">Fechas</span>
+        </div>
+        <div className="divide-y divide-outline-variant">
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <span className="text-xs text-on-surface-variant">Ingreso</span>
+            <span className="text-sm font-medium text-on-surface">
+              {formatDate(servicio.fecha_inicio)}
+            </span>
+          </div>
+          {servicio.recibido_por?.nombre ? (
+            <div className="flex items-center justify-between px-4 py-2.5">
+              <span className="text-xs text-on-surface-variant">Recibió</span>
+              <span className="text-sm font-medium text-on-surface">
+                {servicio.recibido_por.nombre}
+              </span>
+            </div>
+          ) : null}
+          {servicio.fecha_fin ? (
+            <div className="flex items-center justify-between px-4 py-2.5">
+              <span className="text-xs text-on-surface-variant">Finalizado</span>
+              <span className="text-sm font-medium text-on-surface">
+                {formatDate(servicio.fecha_fin)}
+              </span>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* Descripción */}
       {servicio.descripcion ? (
-        <>
-          <SectionHeader>Descripción</SectionHeader>
-          <p className="px-4 py-3 text-sm leading-relaxed text-on-surface">
+        <div>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <FileText className="size-4 text-primary" />
+            <span className="text-sm font-semibold text-on-surface">Descripción del problema</span>
+          </div>
+          <p className="px-4 pb-4 text-sm leading-relaxed text-on-surface">
             {servicio.descripcion}
           </p>
-        </>
+        </div>
       ) : null}
 
-      {/* Fotos de ingreso */}
+      {/* Fotografías de ingreso */}
       {serviceImageUrls.some(Boolean) ? (
-        <>
-          <SectionHeader>Fotografías de ingreso</SectionHeader>
-          <div className="px-4 py-3">
+        <div>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <Camera className="size-4 text-primary" />
+            <span className="text-sm font-semibold text-on-surface">Fotografías de Ingreso</span>
+          </div>
+          <div className="px-4 pb-4">
             <ImageViewer
               altPrefix="Imagen de ingreso"
               columnsClassName="grid-cols-2"
               images={serviceImageUrls.filter(Boolean) as string[]}
             />
           </div>
-        </>
+        </div>
       ) : null}
 
       {/* Tracking link */}
       {servicio.tracking_token ? (
-        <div className="px-4 py-3">
+        <div className="px-4 py-4">
           <CopyLinkButton token={servicio.tracking_token} />
         </div>
       ) : null}
@@ -276,94 +314,96 @@ export default async function ServicioDetailPage({
 
   // ── Tab: Bitácora ─────────────────────────────────────────────────
   const bitacoraContent = (
-    <div>
-      {bitacoras.length === 0 ? (
-        <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
-          <p className="font-medium text-on-surface">Sin notas aún.</p>
-          <p className="mt-1 text-xs">Agrega la primera nota con el formulario de abajo.</p>
-        </div>
-      ) : (
-        <div className="relative px-4 py-5">
-          {/* vertical timeline line */}
-          <div
-            aria-hidden
-            className="absolute left-[2.65rem] top-5 w-px bg-outline-variant"
-            style={{ bottom: "3rem" }}
-          />
+    <div className="divide-y divide-outline-variant">
+      <div>
+        {bitacoras.length === 0 ? (
+          <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
+            <p className="font-medium text-on-surface">Sin notas aún.</p>
+            <p className="mt-1 text-xs">Agrega la primera nota con el formulario de abajo.</p>
+          </div>
+        ) : (
+          <div className="relative px-4 py-5">
+            {/* vertical timeline line */}
+            <div
+              aria-hidden
+              className="absolute left-[2.65rem] top-5 w-px bg-outline-variant"
+              style={{ bottom: "3rem" }}
+            />
 
-          {bitacoras.map((entry, idx) => {
-            const imgs = bitacoraImageUrls[idx].filter(Boolean) as string[];
-            const isOwn = staff?.id === entry.autor?.id;
-            const initials = entry.autor?.nombre?.charAt(0).toUpperCase() ?? "?";
+            {bitacoras.map((entry, idx) => {
+              const imgs = bitacoraImageUrls[idx].filter(Boolean) as string[];
+              const isOwn = staff?.id === entry.autor?.id;
+              const initials = entry.autor?.nombre?.charAt(0).toUpperCase() ?? "?";
 
-            return (
-              <div key={entry.id} className="relative mb-6 flex gap-3">
-                {/* avatar */}
-                <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container">
-                  <span className="text-xs font-semibold text-on-surface">
-                    {initials}
-                  </span>
-                </div>
-
-                <div className="flex-1 pt-0.5">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="text-sm text-on-surface-variant">
-                      <span className="font-medium text-on-surface">
-                        {entry.autor?.nombre ?? "Desconocido"}
-                      </span>{" "}
-                      ha añadido una nota
-                    </p>
-                    <p className="shrink-0 text-xs text-on-surface-variant">
-                      {formatDate(entry.fecha)}
-                    </p>
+              return (
+                <div key={entry.id} className="relative mb-6 flex gap-3">
+                  {/* avatar */}
+                  <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container">
+                    <span className="text-xs font-semibold text-on-surface">
+                      {initials}
+                    </span>
                   </div>
 
-                  <div className="mt-2 rounded-lg bg-surface-container-low p-3">
-                    <p className="text-sm leading-relaxed text-on-surface">
-                      {entry.descripcion}
-                    </p>
-                    {imgs.length > 0 ? (
-                      <ImageViewer
-                        altPrefix="Foto de bitácora"
-                        className="mt-3"
-                        columnsClassName="grid-cols-2"
-                        images={imgs}
-                      />
+                  <div className="flex-1 pt-0.5">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="text-sm text-on-surface-variant">
+                        <span className="font-medium text-on-surface">
+                          {entry.autor?.nombre ?? "Desconocido"}
+                        </span>{" "}
+                        ha añadido una nota
+                      </p>
+                      <p className="shrink-0 text-xs text-on-surface-variant">
+                        {formatDate(entry.fecha)}
+                      </p>
+                    </div>
+
+                    <div className="mt-2 rounded-lg bg-surface-container-low p-3">
+                      <p className="text-sm leading-relaxed text-on-surface">
+                        {entry.descripcion}
+                      </p>
+                      {imgs.length > 0 ? (
+                        <ImageViewer
+                          altPrefix="Foto de bitácora"
+                          className="mt-3"
+                          columnsClassName="grid-cols-2"
+                          images={imgs}
+                        />
+                      ) : null}
+                    </div>
+
+                    {isOwn && canDeleteNota ? (
+                      <form action={deleteBitacoraAction} className="mt-1.5">
+                        <input name="id" type="hidden" value={entry.id} />
+                        <input name="servicioId" type="hidden" value={servicio.id} />
+                        <ConfirmSubmitButton
+                          className="rounded px-2 py-1 text-xs font-medium text-error transition hover:bg-error-container"
+                          confirmMessage="Se eliminará esta nota. ¿Deseas continuar?"
+                        >
+                          Eliminar nota
+                        </ConfirmSubmitButton>
+                      </form>
                     ) : null}
                   </div>
-
-                  {isOwn && canDeleteNota ? (
-                    <form action={deleteBitacoraAction} className="mt-1.5">
-                      <input name="id" type="hidden" value={entry.id} />
-                      <input name="servicioId" type="hidden" value={servicio.id} />
-                      <ConfirmSubmitButton
-                        className="rounded px-2 py-1 text-xs font-medium text-error transition hover:bg-error-container"
-                        confirmMessage="Se eliminará esta nota. ¿Deseas continuar?"
-                      >
-                        Eliminar nota
-                      </ConfirmSubmitButton>
-                    </form>
-                  ) : null}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* End of log marker */}
-          <div className="relative flex items-center gap-3">
-            <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center">
-              <Flag className="size-3.5 text-on-surface-variant" />
+            {/* End of log marker */}
+            <div className="relative flex items-center gap-3">
+              <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center">
+                <Flag className="size-3.5 text-on-surface-variant" />
+              </div>
+              <p className="text-xs uppercase tracking-wide text-on-surface-variant">
+                Fin de bitácora
+              </p>
             </div>
-            <p className="text-xs uppercase tracking-wide text-on-surface-variant">
-              Fin de bitácora
-            </p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Add note form */}
       {servicio.status !== 3 && canAddNota ? (
-        <>
+        <div>
           <SectionHeader>Agregar nota</SectionHeader>
           <form action={createBitacoraAction} className="space-y-3 px-4 py-4">
             <input name="servicioId" type="hidden" value={servicio.id} />
@@ -389,7 +429,7 @@ export default async function ServicioDetailPage({
               Agregar nota
             </ActionButton>
           </form>
-        </>
+        </div>
       ) : null}
     </div>
   );
@@ -401,25 +441,22 @@ export default async function ServicioDetailPage({
         backHref="/dashboard/servicios"
       />
 
-      {/* Service summary strip */}
-      <div className="border-b border-outline-variant px-4 pb-3 pt-2">
-        {servicio.descripcion ? (
-          <p className="mb-2 text-sm text-on-surface-variant line-clamp-2">
-            {servicio.descripcion}
-          </p>
-        ) : null}
-        <ServicioStatusBadge status={servicio.status} />
+      {/* Summary strip — only on mobile (desktop shows description in the info column) */}
+      <div className="border-b border-outline-variant px-4 pb-2 pt-2 lg:hidden">
+        <p className="truncate text-xs text-on-surface-variant">
+          {servicio.descripcion ?? "Sin descripción"}
+        </p>
       </div>
 
       {error ? (
-        <div className="mx-4 mt-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
+        <div className="mx-4 mt-3 lg:mx-8 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
         </div>
       ) : null}
 
       {success ? (
         <div
-          className="mx-4 mt-3 rounded-lg px-4 py-3 text-sm"
+          className="mx-4 mt-3 lg:mx-8 rounded-lg px-4 py-3 text-sm"
           style={{ background: "#00573314", color: "#005a33" }}
         >
           {success}

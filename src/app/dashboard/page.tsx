@@ -60,22 +60,10 @@ export default async function DashboardPage() {
   ]);
 
   const visibleQuickActions = quickActions.filter((action) => {
-    if (action.href === "/dashboard/servicios" && !canViewServicios) {
-      return false;
-    }
-
-    if (action.href === "/dashboard/servicios/nuevo" && !canAddServicios) {
-      return false;
-    }
-
-    if (action.href === "/dashboard/usuarios" && !canViewUsuarios) {
-      return false;
-    }
-
-    if (action.href === "/dashboard/permisos" && !canViewPermisos) {
-      return false;
-    }
-
+    if (action.href === "/dashboard/servicios" && !canViewServicios) return false;
+    if (action.href === "/dashboard/servicios/nuevo" && !canAddServicios) return false;
+    if (action.href === "/dashboard/usuarios" && !canViewUsuarios) return false;
+    if (action.href === "/dashboard/permisos" && !canViewPermisos) return false;
     return true;
   });
 
@@ -92,22 +80,17 @@ export default async function DashboardPage() {
     ).data ?? []
     : [];
 
+  const firstName = staff?.nombre?.split(" ")[0] ?? "usuario";
+
   return (
     <>
-      <PageHeader title="WorkshopPro" />
-
-      {/* Welcome */}
-      <div className="border-b border-outline-variant px-4 py-4">
-        <p className="text-base font-semibold text-on-surface">
-          Hola, {staff?.nombre?.split(" ")[0] ?? "usuario"}
-        </p>
-      </div>
+      <PageHeader title={`Hola, ${firstName}`} />
 
       {/* Quick actions */}
-      <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+      <div className="bg-surface-container-low px-4 lg:px-8 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
         Acciones rápidas
       </div>
-      <div className="grid grid-cols-2 gap-3 px-4 py-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-4 lg:px-8 py-4 lg:py-6">
         {visibleQuickActions.map((action) => {
           const Icon = action.icon;
 
@@ -115,7 +98,7 @@ export default async function DashboardPage() {
             <Link
               key={action.href}
               href={action.href}
-              className="flex flex-col items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-center transition active:bg-surface-container-low"
+              className="flex flex-col items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-center transition active:bg-surface-container-low hover:bg-surface-container-low"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container">
                 <Icon className="size-5 text-primary" />
@@ -131,7 +114,7 @@ export default async function DashboardPage() {
       {/* Recent activity */}
       {canViewServicios ? (
         <>
-          <div className="mt-2 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+          <div className="mt-2 bg-surface-container-low px-4 lg:px-8 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
             Actividad reciente
           </div>
 
@@ -145,7 +128,7 @@ export default async function DashboardPage() {
                 <Link
                   key={s.id}
                   href={`/dashboard/servicios/${s.id}`}
-                  className="flex flex-col gap-1.5 px-4 py-3 transition-colors active:bg-surface-container-low"
+                  className="flex flex-col gap-1.5 px-4 lg:px-8 py-3 lg:py-4 transition-colors active:bg-surface-container-low hover:bg-surface-container-low"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -175,23 +158,25 @@ export default async function DashboardPage() {
         </>
       ) : null}
 
-      {/* Session */}
-      <div className="mt-4 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-        Sesión
-      </div>
-      <div className="px-4 py-4 pb-6">
-        <p className="text-sm font-medium text-on-surface">
-          {staff?.nombre ?? "—"}
-        </p>
-        <p className="mt-0.5 text-xs text-on-surface-variant">
-          {staff?.correo ?? "—"}
-        </p>
-        <form action={logoutAction} className="mt-4">
-          <ActionButton className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-outline-variant text-sm font-medium text-on-surface transition disabled:opacity-60">
-            <LogOut className="size-4" />
-            Cerrar sesión
-          </ActionButton>
-        </form>
+      {/* Sesión — solo mobile (en desktop el usuario se ve en el sidebar) */}
+      <div className="lg:hidden">
+        <div className="mt-4 bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+          Sesión
+        </div>
+        <div className="px-4 py-4 pb-6">
+          <p className="text-sm font-medium text-on-surface">
+            {staff?.nombre ?? "—"}
+          </p>
+          <p className="mt-0.5 text-xs text-on-surface-variant">
+            {staff?.correo ?? "—"}
+          </p>
+          <form action={logoutAction} className="mt-4">
+            <ActionButton className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-outline-variant text-sm font-medium text-on-surface transition disabled:opacity-60">
+              <LogOut className="size-4" />
+              Cerrar sesión
+            </ActionButton>
+          </form>
+        </div>
       </div>
     </>
   );

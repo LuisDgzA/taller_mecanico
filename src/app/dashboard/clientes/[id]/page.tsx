@@ -107,296 +107,307 @@ export default async function ClienteDetailPage({
       />
 
       {error ? (
-        <div className="mx-4 mt-3 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
+        <div className="mx-4 mt-3 lg:mx-8 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
         </div>
       ) : null}
 
       {success ? (
         <div
-          className="mx-4 mt-3 rounded-lg px-4 py-3 text-sm"
+          className="mx-4 mt-3 lg:mx-8 rounded-lg px-4 py-3 text-sm"
           style={{ background: "#00573314", color: "#005a33" }}
         >
           {success}
         </div>
       ) : null}
 
-      {/* ── Ficha general ── */}
-      <section>
-        <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-          Ficha general
-        </div>
+      {/*
+        Desktop: grid de 2 columnas con placement explícito.
+        Mobile: las 3 secciones apilan en orden DOM (Ficha → Vehículos → Zona de peligro).
+        Desktop:
+          col 1 row 1 → Ficha general
+          col 2 row 1 → Vehículos Asociados
+          col 1 row 2 → Zona de peligro
+      */}
+      <div className="lg:grid lg:grid-cols-[minmax(320px,380px)_1fr] lg:gap-8 lg:items-start lg:px-8 lg:py-6">
 
-        <form action={canEditCliente ? updateClienteAction : undefined}>
-          <input
-            name="redirectTo"
-            type="hidden"
-            value={`/dashboard/clientes/${clienteId}?success=Cliente+actualizado`}
-          />
-          <input name="id" type="hidden" value={clienteId} />
-
-          <div className="divide-y divide-outline-variant">
-            <div className="px-4 py-3">
-              <label className="block text-xs text-on-surface-variant">Nombre</label>
-              <input
-                className={inputClass}
-                defaultValue={cliente.nombre ?? ""}
-                name="nombre"
-                required
-                disabled={!canEditCliente}
-              />
-            </div>
-            <div className="px-4 py-3">
-              <label className="block text-xs text-on-surface-variant">Correo</label>
-              <input
-                className={inputClass}
-                defaultValue={cliente.correo ?? ""}
-                name="correo"
-                type="email"
-                disabled={!canEditCliente}
-              />
-            </div>
-            <div className="px-4 py-3">
-              <label className="block text-xs text-on-surface-variant">Teléfono</label>
-              <input
-                className={inputClass}
-                defaultValue={cliente.telefono ?? ""}
-                name="telefono"
-                disabled={!canEditCliente}
-              />
-            </div>
-            {canEditCliente ? (
-              <div className="px-4 py-3">
-                <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
-                  Guardar cambios
-                </ActionButton>
-              </div>
-            ) : (
-              <div className="px-4 py-3 text-xs text-on-surface-variant">
-                No tienes permiso para editar clientes.
-              </div>
-            )}
+        {/* ── Ficha general — col 1, row 1 ── */}
+        <section className="lg:col-start-1 lg:row-start-1 lg:rounded-2xl lg:border lg:border-outline-variant lg:overflow-hidden lg:bg-surface-container-lowest">
+          <div className="bg-surface-container-low px-4 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            Ficha general
           </div>
-        </form>
-      </section>
 
-      {/* ── Vehículos Asociados ── */}
-      <section className="mt-4">
-        <div className="flex items-center justify-between bg-surface-container-low px-4 py-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-            Vehículos Asociados
-          </span>
-          {canAddVehiculo ? (
-            <Link
-              href={
-                showAddVehicle
-                  ? `/dashboard/clientes/${clienteId}`
-                  : `?addVehicle=1`
-              }
-              className="flex items-center gap-1 text-xs font-medium text-primary"
-            >
-              {showAddVehicle ? (
-                "Cancelar"
-              ) : (
-                <>
-                  <Plus className="size-3.5" />
-                  Añadir Vehículo
-                </>
-              )}
-            </Link>
-          ) : null}
-        </div>
-
-        {showAddVehicle ? (
-          <form
-            action={createVehiculoAction}
-            className="space-y-3 border-b border-outline-variant bg-surface-container-low px-4 pb-4 pt-3"
-          >
+          <form action={canEditCliente ? updateClienteAction : undefined}>
             <input
               name="redirectTo"
               type="hidden"
-              value={`/dashboard/clientes/${clienteId}`}
+              value={`/dashboard/clientes/${clienteId}?success=Cliente+actualizado`}
             />
-            <input name="clienteId" type="hidden" value={clienteId} />
+            <input name="id" type="hidden" value={clienteId} />
 
-            <div className="grid grid-cols-2 gap-3">
-              {(
-                [
-                  { label: "Placa", name: "placa", required: true },
-                  { label: "Marca", name: "marca" },
-                  { label: "Modelo", name: "modelo" },
-                  { label: "Color", name: "color" },
-                ] as const
-              ).map((f) => (
-                <label key={f.name} className="block text-xs font-medium text-on-surface">
-                  {f.label}
-                  <input
-                    className={inputClass}
-                    name={f.name}
-                    required={"required" in f ? f.required : false}
-                  />
-                </label>
-              ))}
-              <label className="block text-xs font-medium text-on-surface">
-                Año
+            <div className="divide-y divide-outline-variant">
+              <div className="px-4 py-3">
+                <label className="block text-xs text-on-surface-variant">Nombre</label>
                 <input
                   className={inputClass}
-                  max={new Date().getFullYear()}
-                  min={1900}
-                  name="anio"
-                  type="number"
+                  defaultValue={cliente.nombre ?? ""}
+                  name="nombre"
+                  required
+                  disabled={!canEditCliente}
                 />
-              </label>
-            </div>
-
-            <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
-              Agregar vehículo
-            </ActionButton>
-          </form>
-        ) : null}
-
-        <div className="divide-y divide-outline-variant">
-          {vehicleList.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
-              No hay vehículos registrados.
-            </div>
-          ) : (
-            vehicleList.map((v) => (
-              <div key={v.id} className="px-4 py-3.5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container">
-                    <Car className="size-5 text-primary" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-on-surface">
-                        {[v.marca, v.modelo].filter(Boolean).join(" ") ||
-                          "Sin datos"}
-                      </p>
-                      <span className="ml-auto shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
-                        {v.placa}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-xs text-on-surface-variant">
-                      {[v.anio, v.color].filter(Boolean).join(" · ") || "Sin datos adicionales"}
-                    </p>
-                  </div>
+              </div>
+              <div className="px-4 py-3">
+                <label className="block text-xs text-on-surface-variant">Correo</label>
+                <input
+                  className={inputClass}
+                  defaultValue={cliente.correo ?? ""}
+                  name="correo"
+                  type="email"
+                  disabled={!canEditCliente}
+                />
+              </div>
+              <div className="px-4 py-3">
+                <label className="block text-xs text-on-surface-variant">Teléfono</label>
+                <input
+                  className={inputClass}
+                  defaultValue={cliente.telefono ?? ""}
+                  name="telefono"
+                  disabled={!canEditCliente}
+                />
+              </div>
+              {canEditCliente ? (
+                <div className="px-4 py-3">
+                  <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
+                    Guardar cambios
+                  </ActionButton>
                 </div>
+              ) : (
+                <div className="px-4 py-3 text-xs text-on-surface-variant">
+                  No tienes permiso para editar clientes.
+                </div>
+              )}
+            </div>
+          </form>
+        </section>
 
-                <div className="mt-3 flex gap-2 border-t border-outline-variant pt-3">
-                  <details className="flex-1">
-                    <summary className="flex h-9 cursor-pointer list-none select-none items-center justify-center rounded-lg border border-outline-variant text-sm font-medium text-on-surface">
-                      Ver detalles
-                    </summary>
+        {/* ── Vehículos Asociados — col 2, row 1 ── */}
+        <section className="mt-4 lg:mt-0 lg:col-start-2 lg:row-start-1 lg:rounded-2xl lg:border lg:border-outline-variant lg:overflow-hidden lg:bg-surface-container-lowest">
+          <div className="flex items-center justify-between bg-surface-container-low px-4 py-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              Vehículos Asociados
+            </span>
+            {canAddVehiculo ? (
+              <Link
+                href={
+                  showAddVehicle
+                    ? `/dashboard/clientes/${clienteId}`
+                    : `?addVehicle=1`
+                }
+                className="flex items-center gap-1 text-xs font-medium text-primary"
+              >
+                {showAddVehicle ? (
+                  "Cancelar"
+                ) : (
+                  <>
+                    <Plus className="size-3.5" />
+                    Añadir Vehículo
+                  </>
+                )}
+              </Link>
+            ) : null}
+          </div>
 
-                    <div className="mt-3 space-y-3 rounded-lg bg-surface-container-low p-3">
-                      {canEditVehiculo ? (
-                        <form action={updateVehiculoAction} className="space-y-3">
-                          <input
-                            name="redirectTo"
-                            type="hidden"
-                            value={`/dashboard/clientes/${clienteId}`}
-                          />
-                          <input name="id" type="hidden" value={v.id} />
-                          <input name="clienteId" type="hidden" value={clienteId} />
+          {showAddVehicle ? (
+            <form
+              action={createVehiculoAction}
+              className="space-y-3 border-b border-outline-variant bg-surface-container-low px-4 pb-4 pt-3"
+            >
+              <input
+                name="redirectTo"
+                type="hidden"
+                value={`/dashboard/clientes/${clienteId}`}
+              />
+              <input name="clienteId" type="hidden" value={clienteId} />
 
-                          <div className="grid grid-cols-2 gap-3">
-                            {(
-                              [
-                                { label: "Placa", name: "placa", value: v.placa, required: true },
-                                { label: "Marca", name: "marca", value: v.marca },
-                                { label: "Modelo", name: "modelo", value: v.modelo },
-                                { label: "Color", name: "color", value: v.color },
-                              ] as const
-                            ).map((f) => (
-                              <label key={f.name} className="block text-xs font-medium text-on-surface">
-                                {f.label}
+              <div className="grid grid-cols-2 gap-3">
+                {(
+                  [
+                    { label: "Placa", name: "placa", required: true },
+                    { label: "Marca", name: "marca" },
+                    { label: "Modelo", name: "modelo" },
+                    { label: "Color", name: "color" },
+                  ] as const
+                ).map((f) => (
+                  <label key={f.name} className="block text-xs font-medium text-on-surface">
+                    {f.label}
+                    <input
+                      className={inputClass}
+                      name={f.name}
+                      required={"required" in f ? f.required : false}
+                    />
+                  </label>
+                ))}
+                <label className="block text-xs font-medium text-on-surface">
+                  Año
+                  <input
+                    className={inputClass}
+                    max={new Date().getFullYear()}
+                    min={1900}
+                    name="anio"
+                    type="number"
+                  />
+                </label>
+              </div>
+
+              <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
+                Agregar vehículo
+              </ActionButton>
+            </form>
+          ) : null}
+
+          <div className="divide-y divide-outline-variant">
+            {vehicleList.length === 0 ? (
+              <div className="px-4 py-10 text-center text-sm text-on-surface-variant">
+                No hay vehículos registrados.
+              </div>
+            ) : (
+              vehicleList.map((v) => (
+                <div key={v.id} className="px-4 py-3.5">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container">
+                      <Car className="size-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-on-surface">
+                          {[v.marca, v.modelo].filter(Boolean).join(" ") || "Sin datos"}
+                        </p>
+                        <span className="ml-auto shrink-0 rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[11px] font-medium text-on-surface-variant">
+                          {v.placa}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-on-surface-variant">
+                        {[v.anio, v.color].filter(Boolean).join(" · ") || "Sin datos adicionales"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex gap-2 border-t border-outline-variant pt-3">
+                    <details className="flex-1">
+                      <summary className="flex h-9 cursor-pointer list-none select-none items-center justify-center rounded-lg border border-outline-variant text-sm font-medium text-on-surface">
+                        Ver detalles
+                      </summary>
+
+                      <div className="mt-3 space-y-3 rounded-lg bg-surface-container-low p-3">
+                        {canEditVehiculo ? (
+                          <form action={updateVehiculoAction} className="space-y-3">
+                            <input
+                              name="redirectTo"
+                              type="hidden"
+                              value={`/dashboard/clientes/${clienteId}`}
+                            />
+                            <input name="id" type="hidden" value={v.id} />
+                            <input name="clienteId" type="hidden" value={clienteId} />
+
+                            <div className="grid grid-cols-2 gap-3">
+                              {(
+                                [
+                                  { label: "Placa", name: "placa", value: v.placa, required: true },
+                                  { label: "Marca", name: "marca", value: v.marca },
+                                  { label: "Modelo", name: "modelo", value: v.modelo },
+                                  { label: "Color", name: "color", value: v.color },
+                                ] as const
+                              ).map((f) => (
+                                <label key={f.name} className="block text-xs font-medium text-on-surface">
+                                  {f.label}
+                                  <input
+                                    className={inputClass}
+                                    defaultValue={f.value ?? ""}
+                                    name={f.name}
+                                    required={"required" in f ? f.required : false}
+                                  />
+                                </label>
+                              ))}
+                              <label className="block text-xs font-medium text-on-surface">
+                                Año
                                 <input
                                   className={inputClass}
-                                  defaultValue={f.value ?? ""}
-                                  name={f.name}
-                                  required={"required" in f ? f.required : false}
+                                  defaultValue={v.anio ?? ""}
+                                  max={new Date().getFullYear()}
+                                  min={1900}
+                                  name="anio"
+                                  type="number"
                                 />
                               </label>
-                            ))}
-                            <label className="block text-xs font-medium text-on-surface">
-                              Año
-                              <input
-                                className={inputClass}
-                                defaultValue={v.anio ?? ""}
-                                max={new Date().getFullYear()}
-                                min={1900}
-                                name="anio"
-                                type="number"
-                              />
-                            </label>
-                          </div>
+                            </div>
 
-                          <ActionButton className="h-10 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
-                            Guardar vehículo
-                          </ActionButton>
-                        </form>
-                      ) : null}
+                            <ActionButton className="h-10 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
+                              Guardar vehículo
+                            </ActionButton>
+                          </form>
+                        ) : null}
 
-                      {canDeleteVehiculo ? (
-                        <form action={deleteVehiculoAction}>
-                          <input
-                            name="redirectTo"
-                            type="hidden"
-                            value={`/dashboard/clientes/${clienteId}`}
-                          />
-                          <input name="id" type="hidden" value={v.id} />
-                          <input name="clienteId" type="hidden" value={clienteId} />
-                          <ConfirmSubmitButton
-                            className="h-10 w-full rounded-lg border border-error text-sm font-medium text-error transition"
-                            confirmMessage="Se eliminará este vehículo y sus servicios. ¿Deseas continuar?"
-                          >
-                            Eliminar vehículo
-                          </ConfirmSubmitButton>
-                        </form>
-                      ) : null}
-                    </div>
-                  </details>
+                        {canDeleteVehiculo ? (
+                          <form action={deleteVehiculoAction}>
+                            <input
+                              name="redirectTo"
+                              type="hidden"
+                              value={`/dashboard/clientes/${clienteId}`}
+                            />
+                            <input name="id" type="hidden" value={v.id} />
+                            <input name="clienteId" type="hidden" value={clienteId} />
+                            <ConfirmSubmitButton
+                              className="h-10 w-full rounded-lg border border-error text-sm font-medium text-error transition"
+                              confirmMessage="Se eliminará este vehículo y sus servicios. ¿Deseas continuar?"
+                            >
+                              Eliminar vehículo
+                            </ConfirmSubmitButton>
+                          </form>
+                        ) : null}
+                      </div>
+                    </details>
 
-                  {canAddServicios ? (
-                    <Link
-                      href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${v.id}`}
-                      className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium text-on-primary"
-                    >
-                      <Wrench className="size-3.5" />
-                      Crear servicio
-                    </Link>
-                  ) : null}
+                    {canAddServicios ? (
+                      <Link
+                        href={`/dashboard/servicios/nuevo?step=2&vehiculoId=${v.id}`}
+                        className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-medium text-on-primary"
+                      >
+                        <Wrench className="size-3.5" />
+                        Crear servicio
+                      </Link>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* ── Zona de peligro ── */}
-      {canDeleteCliente ? (
-        <section className="px-4 pb-8 pt-6">
-          <div className="rounded-lg border border-error px-4 py-4">
-            <p className="text-sm font-semibold text-error">Zona de peligro</p>
-            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-              Eliminar permanentemente a este cliente y todos sus datos asociados.
-              Esta acción no se puede deshacer.
-            </p>
-            <form action={deleteClienteAction} className="mt-4">
-              <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
-              <input name="id" type="hidden" value={clienteId} />
-              <ConfirmSubmitButton
-                className="flex h-10 items-center gap-2 rounded-lg border border-error px-4 text-sm font-medium text-error transition"
-                confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
-              >
-                <Trash2 className="size-4" />
-                Eliminar cliente
-              </ConfirmSubmitButton>
-            </form>
+              ))
+            )}
           </div>
         </section>
-      ) : null}
+
+        {/* ── Zona de peligro — col 1, row 2 ── */}
+        {canDeleteCliente ? (
+          <section className="px-4 pb-8 pt-6 lg:p-0 lg:col-start-1 lg:row-start-2">
+            <div className="rounded-lg border border-error px-4 py-4">
+              <p className="text-sm font-semibold text-error">Zona de peligro</p>
+              <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                Eliminar permanentemente a este cliente y todos sus datos asociados.
+                Esta acción no se puede deshacer.
+              </p>
+              <form action={deleteClienteAction} className="mt-4">
+                <input name="redirectTo" type="hidden" value="/dashboard/clientes" />
+                <input name="id" type="hidden" value={clienteId} />
+                <ConfirmSubmitButton
+                  className="flex h-10 items-center gap-2 rounded-lg border border-error px-4 text-sm font-medium text-error transition"
+                  confirmMessage="Se eliminará el cliente y todos sus vehículos. ¿Deseas continuar?"
+                >
+                  <Trash2 className="size-4" />
+                  Eliminar cliente
+                </ConfirmSubmitButton>
+              </form>
+            </div>
+          </section>
+        ) : null}
+
+      </div>
     </>
   );
 }

@@ -20,3 +20,10 @@ export const dashboardNavItems: DashboardNavItem[] = [
   { href: "/dashboard/usuarios", label: "Usuarios", icon: Users },
   { href: "/dashboard/permisos", label: "Permisos", icon: ShieldCheck },
 ];
+
+export function isActivePath(pathname: string, href: string) {
+  if (href === "/dashboard") {
+    return pathname === href;
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}

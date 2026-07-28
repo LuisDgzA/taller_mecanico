@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
 import { BottomNav } from "@/components/dashboard/bottom-nav";
+import { DesktopSidebar } from "@/components/dashboard/desktop-sidebar";
 import { OfflineGuard } from "@/components/dashboard/offline-guard";
 import { getCurrentStaffProfile } from "@/lib/current-staff";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
@@ -28,10 +29,20 @@ export default async function DashboardLayout({
   ]);
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      <OfflineGuard>
-        <main className="pb-20">{children}</main>
-      </OfflineGuard>
+    <div className="min-h-screen bg-surface text-on-surface lg:flex">
+      <DesktopSidebar
+        canViewServicios={canViewServicios}
+        canViewClientes={canViewClientes}
+        canViewUsuarios={canViewUsuarios}
+        canViewPermisos={canViewPermisos}
+        userNombre={staff.nombre}
+        userCorreo={staff.correo}
+      />
+      <div className="flex min-h-screen flex-1 flex-col lg:ml-60">
+        <OfflineGuard>
+          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+        </OfflineGuard>
+      </div>
       <BottomNav
         canViewServicios={canViewServicios}
         canViewPermisos={canViewPermisos}
