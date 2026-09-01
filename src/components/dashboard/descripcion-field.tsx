@@ -1,6 +1,5 @@
 "use client";
 
-import { Mic } from "lucide-react";
 import { useState } from "react";
 
 export function DescripcionField() {
@@ -16,15 +15,8 @@ export function DescripcionField() {
         placeholder="Describa el motivo de ingreso o reporte del cliente en detalle técnico..."
         rows={5}
       />
-      <div className="mt-1 flex items-center justify-between">
+      <div className="mt-1 flex items-center justify-end">
         <span className="text-xs text-slate-400">{len}/500</span>
-        <button
-          className="flex items-center gap-1 text-xs font-medium text-primary"
-          type="button"
-        >
-          <Mic className="size-3.5" />
-          Dictar
-        </button>
       </div>
     </div>
   );

@@ -29,11 +29,7 @@ async function fetchPermisos(
   supabase: Awaited<ReturnType<typeof createSupabaseServerComponentClient>> | ReturnType<typeof createSupabaseAdminClient>,
   usuarioId: number,
 ) {
-  const queryCandidates = [
-    "usuario_id",
-    "seg_usuario_id",
-    "id_usuario",
-  ] as const;
+  const queryCandidates = ["usuario_id"] as const;
 
   let data: PermisoRow[] = [];
   let error: { message?: string } | null = null;
@@ -60,7 +56,7 @@ async function fetchPermisos(
   const permisos = new Set<number>();
 
   for (const row of data) {
-    const rowUsuarioId = getNumericValue(row, ["usuario_id", "seg_usuario_id", "id_usuario"]);
+    const rowUsuarioId = getNumericValue(row, ["usuario_id"]);
 
     if (rowUsuarioId !== usuarioId) {
       continue;

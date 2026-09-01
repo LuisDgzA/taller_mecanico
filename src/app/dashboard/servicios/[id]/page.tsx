@@ -9,6 +9,7 @@ import { ActionButton } from "@/components/ui/action-button";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { ImageViewer } from "@/components/dashboard/image-viewer";
+import { NotaForm } from "@/components/dashboard/nota-form";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ServiceDetailTabs } from "@/components/dashboard/service-detail-tabs";
 import { ServicioStatusBadge } from "@/components/dashboard/servicio-status-badge";
@@ -405,30 +406,7 @@ export default async function ServicioDetailPage({
       {servicio.status !== 3 && canAddNota ? (
         <div>
           <SectionHeader>Agregar nota</SectionHeader>
-          <form action={createBitacoraAction} className="space-y-3 px-4 py-4">
-            <input name="servicioId" type="hidden" value={servicio.id} />
-            <textarea
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary"
-              minLength={5}
-              name="descripcion"
-              placeholder="Describe el trabajo realizado…"
-              required
-              rows={4}
-            />
-            <label className="block text-xs font-medium text-on-surface-variant">
-              Fotografías (máx. 4 · JPG, PNG o WebP)
-              <input
-                accept="image/*"
-                className="mt-1.5 w-full rounded-lg border border-dashed border-outline-variant bg-surface-container-low p-3 text-sm text-on-surface-variant file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-xs file:font-semibold file:text-on-primary"
-                multiple
-                name="imagenes"
-                type="file"
-              />
-            </label>
-            <ActionButton className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition disabled:opacity-60">
-              Agregar nota
-            </ActionButton>
-          </form>
+          <NotaForm servicioId={servicio.id} action={createBitacoraAction} />
         </div>
       ) : null}
     </div>

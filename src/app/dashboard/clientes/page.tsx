@@ -181,10 +181,10 @@ export default async function ClientesPage({
       {!showNew && canAddClientes ? (
         <Link
           href="/dashboard/clientes?new=1"
-          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-95"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition active:scale-95"
           aria-label="Agregar cliente"
         >
-          <Plus className="size-6" />
+          <Plus className="size-6 stroke-white" />
         </Link>
       ) : null}
     </>

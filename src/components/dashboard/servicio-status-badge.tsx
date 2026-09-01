@@ -1,8 +1,8 @@
 const STATUS_CONFIG = {
-  0: { label: "Pendiente",   bg: "#73560014", color: "#735600" },
-  1: { label: "En Progreso", bg: "#004ac614", color: "#004ac6" },
-  2: { label: "Finalizado",  bg: "#00573314", color: "#005a33" },
-  3: { label: "Entregado",   bg: "#43455614", color: "#434655" },
+  0: { label: "Pendiente",   bg: "#FEF3C7", color: "#92400E" },
+  1: { label: "En Progreso", bg: "#DBEAFE", color: "#1E40AF" },
+  2: { label: "Finalizado",  bg: "#D1FAE5", color: "#065F46" },
+  3: { label: "Entregado",   bg: "#E0E7FF", color: "#3730A3" },
 } as const;
 
 type ServicioStatus = keyof typeof STATUS_CONFIG;
