@@ -3,35 +3,50 @@
 import { Camera } from "lucide-react";
 import { useRef, useState } from "react";
 
-type Preview = { url: string; name: string };
+type Preview = { file: File; url: string };
+
+const MAX_FOTOS = 5;
 
 export function FotosUploader() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [previews, setPreviews] = useState<Preview[]>([]);
+  const [items, setItems] = useState<Preview[]>([]);
 
-  const syncFromFiles = (files: File[]) => {
-    previews.forEach((p) => URL.revokeObjectURL(p.url));
-    setPreviews(files.map((f) => ({ url: URL.createObjectURL(f), name: f.name })));
+  const syncInput = (previews: Preview[]) => {
+    if (!inputRef.current) return;
+    const dt = new DataTransfer();
+    previews.forEach((p) => dt.items.add(p.file));
+    inputRef.current.files = dt.files;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let files = Array.from(e.target.files ?? []);
-    if (files.length > 5) {
-      files = files.slice(0, 5);
-      const dt = new DataTransfer();
-      files.forEach((f) => dt.items.add(f));
-      e.target.files = dt.files;
-    }
-    syncFromFiles(files);
+    const incoming = Array.from(e.target.files ?? []);
+
+    setItems((prev) => {
+      const merged = [...prev];
+
+      for (const file of incoming) {
+        if (merged.length >= MAX_FOTOS) break;
+        // skip exact duplicates (same name + size)
+        const isDupe = merged.some(
+          (p) => p.file.name === file.name && p.file.size === file.size,
+        );
+        if (!isDupe) {
+          merged.push({ file, url: URL.createObjectURL(file) });
+        }
+      }
+
+      syncInput(merged);
+      return merged;
+    });
   };
 
   const removeImage = (index: number) => {
-    if (!inputRef.current) return;
-    const files = Array.from(inputRef.current.files ?? []).filter((_, i) => i !== index);
-    const dt = new DataTransfer();
-    files.forEach((f) => dt.items.add(f));
-    inputRef.current.files = dt.files;
-    syncFromFiles(files);
+    setItems((prev) => {
+      URL.revokeObjectURL(prev[index].url);
+      const next = prev.filter((_, i) => i !== index);
+      syncInput(next);
+      return next;
+    });
   };
 
   return (
@@ -42,7 +57,9 @@ export function FotosUploader() {
       >
         <Camera className="size-6 text-on-surface-variant" />
         <span className="text-sm font-medium text-on-surface-variant">
-          {previews.length > 0 ? `${previews.length} foto${previews.length !== 1 ? "s" : ""} seleccionada${previews.length !== 1 ? "s" : ""}` : "Añadir"}
+          {items.length > 0
+            ? `${items.length} foto${items.length !== 1 ? "s" : ""} seleccionada${items.length !== 1 ? "s" : ""}`
+            : "Añadir"}
         </span>
       </label>
       <input
@@ -55,13 +72,13 @@ export function FotosUploader() {
         type="file"
         onChange={handleChange}
       />
-      {previews.length > 0 && (
+      {items.length > 0 && (
         <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {previews.map((p, i) => (
-            <div key={i} className="relative aspect-square">
+          {items.map((p, i) => (
+            <div key={p.url} className="relative aspect-square">
               <img
                 src={p.url}
-                alt={p.name}
+                alt={p.file.name}
                 className="h-full w-full rounded-lg object-cover"
               />
               <button

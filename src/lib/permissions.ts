@@ -45,7 +45,7 @@ function getPositiveNumericValue(row: PermissionRow, keys: string[]) {
 }
 
 function rowMatchesUserId(row: PermissionRow, usuarioId: number) {
-  const candidateKeys = ["usuario_id", "seg_usuario_id", "id_usuario"];
+  const candidateKeys = ["usuario_id"];
 
   return candidateKeys.some((key) => {
     const value = row[key];
@@ -67,7 +67,7 @@ async function fetchUserPermissionRows(
   supabase: Awaited<ReturnType<typeof createSupabaseServerComponentClient>> | ReturnType<typeof createSupabaseAdminClient>,
   usuarioId: number,
 ) {
-  const queryCandidates = ["usuario_id", "seg_usuario_id", "id_usuario"] as const;
+  const queryCandidates = ["usuario_id"] as const;
 
   let lastError: { message?: string } | null = null;
   let hadSuccessfulQuery = false;

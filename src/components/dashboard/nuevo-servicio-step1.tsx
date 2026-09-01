@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 
 import { initServicioStep1Action } from "@/actions/servicios";
 import { ActionButton } from "@/components/ui/action-button";
@@ -200,7 +200,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 type="button"
                 onClick={handlePlateLookup}
               >
-                {isPending ? <span className="text-sm">…</span> : (
+                {isPending ? <Loader2 className="size-4 animate-spin" /> : (
                   <>
                     <Search className="size-4 sm:hidden" />
                     <span className="hidden text-sm font-semibold sm:block">Buscar</span>
@@ -246,7 +246,7 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
                 type="button"
                 onClick={handleClienteSearch}
               >
-                {isPending ? <span className="text-sm">…</span> : (
+                {isPending ? <Loader2 className="size-4 animate-spin" /> : (
                   <>
                     <Search className="size-4 sm:hidden" />
                     <span className="hidden text-sm font-semibold sm:block">Buscar</span>

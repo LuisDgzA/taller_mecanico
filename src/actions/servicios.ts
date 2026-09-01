@@ -186,7 +186,7 @@ export async function createServicioAction(formData: FormData) {
   }
 
   revalidatePath(BASE);
-  redirect(BASE);
+  redirect(buildActionRedirect(`${BASE}/${servicio.id}`, { success: "Servicio creado correctamente." }));
 }
 
 export async function updateServicioStatusAction(formData: FormData) {

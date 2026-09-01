@@ -171,7 +171,7 @@ export default async function DashboardPage() {
             {staff?.correo ?? "—"}
           </p>
           <form action={logoutAction} className="mt-4">
-            <ActionButton className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-outline-variant text-sm font-medium text-on-surface transition disabled:opacity-60">
+            <ActionButton className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:opacity-60">
               <LogOut className="size-4" />
               Cerrar sesión
             </ActionButton>
