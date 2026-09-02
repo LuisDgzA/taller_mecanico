@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { buildActionRedirect, getRedirectTarget } from "@/lib/action-feedback";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
+import { toTitleCase } from "@/lib/format-text";
 import { DeleteClienteSchema, CreateClienteSchema, UpdateClienteSchema } from "@/lib/schemas/cliente";
 import { createSupabaseServerActionClient } from "@/lib/supabase/server";
 
@@ -80,7 +81,10 @@ export async function createClienteAction(
     }
   }
 
-  const { error } = await supabase.from("clientes").insert(parsed.data);
+  const { error } = await supabase.from("clientes").insert({
+    ...parsed.data,
+    nombre: toTitleCase(parsed.data.nombre),
+  });
 
   if (error) {
     return { error: error.message };

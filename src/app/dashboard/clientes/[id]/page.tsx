@@ -43,6 +43,7 @@ export default async function ClienteDetailPage({
     error?: string;
     success?: string;
     addVehicle?: string;
+    back?: string;
   }>;
 }) {
   const { id } = await params;
@@ -51,6 +52,7 @@ export default async function ClienteDetailPage({
   const error = feedback.error?.trim() ?? "";
   const success = feedback.success?.trim() ?? "";
   const requestedAddVehicle = feedback.addVehicle === "1";
+  const backHref = feedback.back?.startsWith("/dashboard/") ? feedback.back : "/dashboard/clientes";
 
   if (!Number.isFinite(clienteId) || clienteId <= 0) notFound();
 
@@ -94,7 +96,7 @@ export default async function ClienteDetailPage({
     <>
       <PageHeader
         title="Detalle del Cliente"
-        backHref="/dashboard/clientes"
+        backHref={backHref}
         action={canEditCliente ? (
           <Link
             href="?edit=1"

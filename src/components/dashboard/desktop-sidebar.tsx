@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { logoutAction } from "@/actions/auth";
 import { cn } from "@/lib/utils";
 import { dashboardNavItems, isActivePath } from "./navigation-items";
 
@@ -69,8 +71,8 @@ export function DesktopSidebar({
         })}
       </nav>
 
-      {/* User info */}
-      <div className="border-t border-outline-variant px-4 py-4">
+      {/* User info + logout */}
+      <div className="border-t border-outline-variant px-4 py-4 space-y-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
             {userNombre?.charAt(0).toUpperCase() ?? "?"}
@@ -84,6 +86,15 @@ export function DesktopSidebar({
             </p>
           </div>
         </div>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-xs font-medium text-red-700 transition hover:bg-red-100"
+          >
+            <LogOut className="size-3.5" />
+            Cerrar sesión
+          </button>
+        </form>
       </div>
     </aside>
   );

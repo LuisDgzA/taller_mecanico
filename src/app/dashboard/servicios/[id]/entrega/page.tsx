@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server";
+import { nowFormatted } from "@/lib/format-date";
 import { EntregaForm } from "./_form";
 
 type ServicioEntrega = {
@@ -20,12 +21,7 @@ type ServicioEntrega = {
   } | null;
 };
 
-function now() {
-  return new Date().toLocaleString("es-MX", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
-}
+const now = nowFormatted;
 
 export default async function EntregaPage({
   params,

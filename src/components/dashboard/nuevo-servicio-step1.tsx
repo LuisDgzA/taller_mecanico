@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition, type SubmitEvent } from "react";
 
 import { Loader2, Search } from "lucide-react";
 
@@ -85,6 +85,12 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
   // null = none picked yet, -1 = "add new vehicle", >0 = existing vehicle id
   const [selectedVehiculoId, setSelectedVehiculoId] = useState<number | null>(null);
 
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    matches: ClienteResult[];
+    nombre: string;
+  } | null>(null);
+
+  const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
 
   const plateVehiculo = plateResult?.found ? plateResult.vehiculo : null;
@@ -159,10 +165,40 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
     setClienteError(null);
     setSelectedCliente(null);
     setSelectedVehiculoId(null);
+    setDuplicateWarning(null);
+  };
+
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+    if (!showClientForm || duplicateWarning) return; // already confirmed or not creating new client
+
+    const form = e.currentTarget;
+    const nombre = (form.elements.namedItem("nombre") as HTMLInputElement)?.value?.trim();
+    if (!nombre || nombre.length < 2) return;
+
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`/api/clientes/search?q=${encodeURIComponent(nombre)}`);
+      const data = (await res.json()) as { clientes?: ClienteResult[] };
+      const matches = (data.clientes ?? []).slice(0, 3);
+      if (matches.length > 0) {
+        setDuplicateWarning({ matches, nombre });
+        return;
+      }
+    } catch {
+      // si falla la búsqueda, dejamos continuar
+    }
+
+    form.requestSubmit();
   };
 
   return (
-    <form action={initServicioStep1Action} className="space-y-4">
+    <form
+      ref={formRef}
+      action={initServicioStep1Action}
+      className="space-y-4"
+      onSubmit={handleSubmit}
+    >
       {error ? (
         <div className="rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
           {error}
@@ -453,6 +489,41 @@ export function NuevoServicioStep1Form({ error }: { error?: string }) {
           </div>
         </div>
       ) : null}
+
+      {duplicateWarning && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
+          <p className="font-medium text-amber-900">
+            Ya existe{duplicateWarning.matches.length > 1 ? "n" : ""}{" "}
+            {duplicateWarning.matches.length} cliente{duplicateWarning.matches.length > 1 ? "s" : ""}{" "}
+            con un nombre similar a <span className="font-semibold">"{duplicateWarning.nombre}"</span>:
+          </p>
+          <ul className="mt-2 space-y-1">
+            {duplicateWarning.matches.map((c) => (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  className="w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-left text-xs transition hover:border-primary"
+                  onClick={() => {
+                    setSelectedCliente(c);
+                    setDuplicateWarning(null);
+                    setSelectedVehiculoId(null);
+                  }}
+                >
+                  <span className="font-medium text-on-surface">{c.nombre}</span>
+                  {c.telefono && <span className="ml-2 text-on-surface-variant">{c.telefono}</span>}
+                  <span className="ml-2 text-primary">→ Usar este</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="submit"
+            className="mt-3 text-xs font-medium text-on-surface-variant underline underline-offset-2"
+          >
+            Crear de todas formas como nuevo cliente
+          </button>
+        </div>
+      )}
 
       {(resolvedVehiculo ||
         (selectedCliente && selectedVehiculoId !== null) ||
