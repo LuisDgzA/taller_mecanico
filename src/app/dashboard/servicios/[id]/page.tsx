@@ -5,6 +5,7 @@ import { Calendar, Camera, Car, FileText, Flag, Pencil } from "lucide-react";
 
 import { createBitacoraAction, deleteBitacoraAction } from "@/actions/bitacoras";
 import { updateServicioStatusAction } from "@/actions/servicios";
+import { formatDate } from "@/lib/format-date";
 import { ActionButton } from "@/components/ui/action-button";
 import { ConfirmSubmitButton } from "@/components/dashboard/confirm-submit-button";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
@@ -62,12 +63,6 @@ async function getSignedUrl(
   return data?.signedUrl ?? null;
 }
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleString("es-MX", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
 
 const NEXT_STATUS: Record<number, { value: number; label: string } | null> = {
   0: { value: 1, label: "Marcar En Progreso" },
@@ -234,7 +229,7 @@ export default async function ServicioDetailPage({
             </div>
             <Link
               className="shrink-0 text-on-surface-variant transition hover:text-primary"
-              href={`/dashboard/clientes/${servicio.vehiculo.cliente.id}`}
+              href={`/dashboard/clientes/${servicio.vehiculo.cliente.id}?back=/dashboard/servicios/${servicio.id}`}
             >
               <Pencil className="size-4" />
             </Link>

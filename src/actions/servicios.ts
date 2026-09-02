@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { buildActionRedirect } from "@/lib/action-feedback";
+import { toTitleCase } from "@/lib/format-text";
 import { requireCurrentStaffProfile } from "@/lib/current-staff";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { CreateServicioSchema, UpdateServicioStatusSchema } from "@/lib/schemas/servicio";
@@ -82,7 +83,7 @@ export async function initServicioStep1Action(formData: FormData) {
 
     const { data: newCliente, error: clienteError } = await supabase
       .from("clientes")
-      .insert({ nombre, correo, telefono })
+      .insert({ nombre: toTitleCase(nombre), correo, telefono })
       .select("id")
       .single();
 

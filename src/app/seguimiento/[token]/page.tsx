@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { formatDate } from "@/lib/format-date";
 
 import { RealtimeRefresh } from "./realtime-refresh";
 
@@ -42,12 +43,6 @@ const STATUS_STEPS = [
   { label: "Entregado", value: 3 },
 ];
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleString("es-MX", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
 
 async function getSignedUrl(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
