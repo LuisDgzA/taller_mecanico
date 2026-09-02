@@ -3,6 +3,8 @@
 import { Camera } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { compressImage } from "@/lib/compress-image";
+
 type Preview = { file: File; url: string };
 
 const MAX_FOTOS = 5;
@@ -18,23 +20,26 @@ export function FotosUploader() {
     inputRef.current.files = dt.files;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(e.target.files ?? []);
 
     setItems((prev) => {
-      const merged = [...prev];
+      // Reset input while we process — will be re-synced after compression
+      if (inputRef.current) inputRef.current.value = "";
+      return prev;
+    });
 
-      for (const file of incoming) {
+    const compressed = await Promise.all(incoming.map(compressImage));
+
+    setItems((prev) => {
+      const merged = [...prev];
+      for (const file of compressed) {
         if (merged.length >= MAX_FOTOS) break;
-        // skip exact duplicates (same name + size)
         const isDupe = merged.some(
           (p) => p.file.name === file.name && p.file.size === file.size,
         );
-        if (!isDupe) {
-          merged.push({ file, url: URL.createObjectURL(file) });
-        }
+        if (!isDupe) merged.push({ file, url: URL.createObjectURL(file) });
       }
-
       syncInput(merged);
       return merged;
     });
