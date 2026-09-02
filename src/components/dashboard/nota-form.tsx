@@ -3,6 +3,8 @@
 import { ImagePlus, X } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { compressImage } from "@/lib/compress-image";
+
 import { ActionButton } from "@/components/ui/action-button";
 
 type Preview = { file: File; url: string };
@@ -25,11 +27,16 @@ export function NotaForm({ servicioId, action }: NotaFormProps) {
     inputRef.current.files = dt.files;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(e.target.files ?? []);
+
+    if (inputRef.current) inputRef.current.value = "";
+
+    const compressed = await Promise.all(incoming.map(compressImage));
+
     setItems((prev) => {
       const merged = [...prev];
-      for (const file of incoming) {
+      for (const file of compressed) {
         if (merged.length >= MAX_FOTOS) break;
         const isDupe = merged.some(
           (p) => p.file.name === file.name && p.file.size === file.size,
