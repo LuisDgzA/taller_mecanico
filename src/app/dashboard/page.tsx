@@ -3,6 +3,7 @@ import {
   ClipboardList,
   LogOut,
   Plus,
+  Package,
   ShieldCheck,
   UserRound,
   Users,
@@ -33,6 +34,7 @@ const quickActions = [
   { href: "/dashboard/servicios/nuevo", label: "Nuevo Servicio", icon: Plus },
   { href: "/dashboard/servicios", label: "Ver Servicios", icon: ClipboardList },
   { href: "/dashboard/clientes", label: "Clientes", icon: UserRound },
+  { href: "/dashboard/inventario", label: "Inventario", icon: Package },
   { href: "/dashboard/usuarios", label: "Usuarios", icon: Users },
   { href: "/dashboard/permisos", label: "Permisos", icon: ShieldCheck },
 ];
@@ -50,11 +52,20 @@ function formatRelativeDate(dateString: string) {
 }
 
 export default async function DashboardPage() {
-  const [staff, supabase, canViewServicios, canAddServicios, canViewUsuarios, canViewPermisos] = await Promise.all([
+  const [
+    staff,
+    supabase,
+    canViewServicios,
+    canAddServicios,
+    canViewInventario,
+    canViewUsuarios,
+    canViewPermisos,
+  ] = await Promise.all([
     getCurrentStaffProfile(),
     createSupabaseServerComponentClient(),
     currentUserHasPermission(PERMISOS.SERVICIOS_VER),
     currentUserHasPermission(PERMISOS.SERVICIOS_ADD),
+    currentUserHasPermission(PERMISOS.INVENTARIO_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_PERMISOS),
   ]);
@@ -64,6 +75,26 @@ export default async function DashboardPage() {
     if (action.href === "/dashboard/servicios/nuevo" && !canAddServicios) return false;
     if (action.href === "/dashboard/usuarios" && !canViewUsuarios) return false;
     if (action.href === "/dashboard/permisos" && !canViewPermisos) return false;
+    if (action.href === "/dashboard/servicios" && !canViewServicios) {
+      return false;
+    }
+
+    if (action.href === "/dashboard/servicios/nuevo" && !canAddServicios) {
+      return false;
+    }
+
+    if (action.href === "/dashboard/inventario" && !canViewInventario) {
+      return false;
+    }
+
+    if (action.href === "/dashboard/usuarios" && !canViewUsuarios) {
+      return false;
+    }
+
+    if (action.href === "/dashboard/permisos" && !canViewPermisos) {
+      return false;
+    }
+
     return true;
   });
 

@@ -11,6 +11,7 @@ type BottomNavProps = {
   className?: string;
   canViewServicios?: boolean;
   canViewClientes?: boolean;
+  canViewInventario?: boolean;
   canViewUsuarios?: boolean;
   canViewPermisos?: boolean;
 };
@@ -19,6 +20,7 @@ export function BottomNav({
   className,
   canViewServicios = true,
   canViewClientes = true,
+  canViewInventario = true,
   canViewUsuarios = true,
   canViewPermisos = true,
 }: BottomNavProps) {
@@ -29,6 +31,10 @@ export function BottomNav({
     }
 
     if (item.href === "/dashboard/clientes" && !canViewClientes) {
+      return false;
+    }
+
+    if (item.href === "/dashboard/inventario" && !canViewInventario) {
       return false;
     }
 

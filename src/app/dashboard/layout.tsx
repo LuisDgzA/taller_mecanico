@@ -21,9 +21,16 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const [canViewServicios, canViewClientes, canViewUsuarios, canViewPermisos] = await Promise.all([
+  const [
+    canViewServicios,
+    canViewClientes,
+    canViewInventario,
+    canViewUsuarios,
+    canViewPermisos,
+  ] = await Promise.all([
     currentUserHasPermission(PERMISOS.SERVICIOS_VER),
     currentUserHasPermission(PERMISOS.CLIENTES_VER),
+    currentUserHasPermission(PERMISOS.INVENTARIO_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_VER),
     currentUserHasPermission(PERMISOS.USUARIOS_PERMISOS),
   ]);
@@ -33,6 +40,7 @@ export default async function DashboardLayout({
       <DesktopSidebar
         canViewServicios={canViewServicios}
         canViewClientes={canViewClientes}
+        canViewInventario={canViewInventario}
         canViewUsuarios={canViewUsuarios}
         canViewPermisos={canViewPermisos}
         userNombre={staff.nombre}
@@ -46,6 +54,7 @@ export default async function DashboardLayout({
       <BottomNav
         canViewServicios={canViewServicios}
         canViewPermisos={canViewPermisos}
+        canViewInventario={canViewInventario}
         canViewUsuarios={canViewUsuarios}
         canViewClientes={canViewClientes}
       />

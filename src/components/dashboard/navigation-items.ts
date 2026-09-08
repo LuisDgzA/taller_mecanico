@@ -2,6 +2,7 @@ import {
   CarFront,
   ClipboardList,
   LayoutGrid,
+  Package,
   ShieldCheck,
   type LucideIcon,
   Users,
@@ -17,6 +18,7 @@ export const dashboardNavItems: DashboardNavItem[] = [
   { href: "/dashboard", label: "Inicio", icon: LayoutGrid },
   { href: "/dashboard/servicios", label: "Servicios", icon: ClipboardList },
   { href: "/dashboard/clientes", label: "Clientes", icon: CarFront },
+  { href: "/dashboard/inventario", label: "Inventario", icon: Package },
   { href: "/dashboard/usuarios", label: "Usuarios", icon: Users },
   { href: "/dashboard/permisos", label: "Permisos", icon: ShieldCheck },
 ];

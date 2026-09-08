@@ -9,6 +9,7 @@ import { dashboardNavItems, isActivePath } from "./navigation-items";
 type DesktopSidebarProps = {
   canViewServicios?: boolean;
   canViewClientes?: boolean;
+  canViewInventario?: boolean;
   canViewUsuarios?: boolean;
   canViewPermisos?: boolean;
   userNombre: string | null;
@@ -18,6 +19,7 @@ type DesktopSidebarProps = {
 export function DesktopSidebar({
   canViewServicios = true,
   canViewClientes = true,
+  canViewInventario = true,
   canViewUsuarios = true,
   canViewPermisos = true,
   userNombre,
@@ -28,6 +30,7 @@ export function DesktopSidebar({
   const visibleItems = dashboardNavItems.filter((item) => {
     if (item.href === "/dashboard/servicios" && !canViewServicios) return false;
     if (item.href === "/dashboard/clientes" && !canViewClientes) return false;
+    if (item.href === "/dashboard/inventario" && !canViewInventario) return false;
     if (item.href === "/dashboard/usuarios" && !canViewUsuarios) return false;
     if (item.href === "/dashboard/permisos" && !canViewPermisos) return false;
     return true;

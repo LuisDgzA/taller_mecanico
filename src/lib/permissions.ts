@@ -23,6 +23,7 @@ export const PERMISOS = {
   USUARIOS_EDIT: 13,
   USUARIOS_DESACTIVAR: 14,
   USUARIOS_PERMISOS: 15,
+  INVENTARIO_VER: 18,
 } as const;
 
 function getPositiveNumericValue(row: PermissionRow, keys: string[]) {
