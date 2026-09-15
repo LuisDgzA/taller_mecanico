@@ -49,14 +49,8 @@ function formatDate(d: string) {
   });
 }
 
-async function getSignedUrl(
-  supabase: ReturnType<typeof createSupabaseAdminClient>,
-  bucket: string,
-  path: string | null,
-): Promise<string | null> {
-  if (!path) return null;
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
-  return data?.signedUrl ?? null;
+function getImageUrl(url: string | null): string | null {
+  return url;
 }
 
 export default async function SeguimientoPage({
@@ -99,17 +93,17 @@ export default async function SeguimientoPage({
 
   const serviceImageUrls = await Promise.all(
     [servicio.imagen_uno, servicio.imagen_dos, servicio.imagen_tres, servicio.imagen_cuatro, servicio.imagen_cinco].map(
-      (p) => getSignedUrl(supabase, "servicios", p),
+      (p) => getImageUrl(p),
     ),
   );
 
   const bitacoraImageUrls = await Promise.all(
     bitacoras.map((b) =>
       Promise.all([
-        getSignedUrl(supabase, "bitacoras", b.imagen_uno),
-        getSignedUrl(supabase, "bitacoras", b.imagen_dos),
-        getSignedUrl(supabase, "bitacoras", b.imagen_tres),
-        getSignedUrl(supabase, "bitacoras", b.imagen_cuatro),
+        getImageUrl(b.imagen_uno),
+        getImageUrl(b.imagen_dos),
+        getImageUrl(b.imagen_tres),
+        getImageUrl(b.imagen_cuatro),
       ]),
     ),
   );

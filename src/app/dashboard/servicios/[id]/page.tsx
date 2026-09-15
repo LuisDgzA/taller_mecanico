@@ -51,14 +51,8 @@ type BitacoraRow = {
   autor: { id: number; nombre: string } | null;
 };
 
-async function getSignedUrl(
-  supabase: Awaited<ReturnType<typeof createSupabaseServerComponentClient>>,
-  bucket: string,
-  path: string | null,
-): Promise<string | null> {
-  if (!path) return null;
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
-  return data?.signedUrl ?? null;
+function getImageUrl(url: string | null): string | null {
+  return url;
 }
 
 function formatDate(dateString: string) {
@@ -132,7 +126,7 @@ export default async function ServicioDetailPage({
   const serviceImageUrls = await Promise.all(
     [servicio.imagen_uno, servicio.imagen_dos, servicio.imagen_tres,
      servicio.imagen_cuatro, servicio.imagen_cinco].map((p) =>
-      getSignedUrl(supabase, "servicios", p),
+      getImageUrl(p),
     ),
   );
 
@@ -140,10 +134,10 @@ export default async function ServicioDetailPage({
   const bitacoraImageUrls = await Promise.all(
     bitacoras.map((b) =>
       Promise.all([
-        getSignedUrl(supabase, "bitacoras", b.imagen_uno),
-        getSignedUrl(supabase, "bitacoras", b.imagen_dos),
-        getSignedUrl(supabase, "bitacoras", b.imagen_tres),
-        getSignedUrl(supabase, "bitacoras", b.imagen_cuatro),
+        getImageUrl(b.imagen_uno),
+        getImageUrl(b.imagen_dos),
+        getImageUrl(b.imagen_tres),
+        getImageUrl(b.imagen_cuatro),
       ]),
     ),
   );

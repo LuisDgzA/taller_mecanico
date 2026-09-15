@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { buildActionRedirect } from "@/lib/action-feedback";
+import { uploadCloudflareImage } from "@/lib/cloudflare-images";
 import { requireCurrentStaffProfile } from "@/lib/current-staff";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { CreateBitacoraSchema, DeleteBitacoraSchema } from "@/lib/schemas/bitacora";
@@ -65,20 +66,34 @@ export async function createBitacoraAction(formData: FormData) {
 
     for (let i = 0; i < Math.min(files.length, 4); i++) {
       const file = files[i];
-      const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase();
-      const path = `${bitacora.id}/imagen_${i + 1}.${ext}`;
+      let imageUrl: string;
 
-      const { error: uploadError } = await supabase.storage
-        .from("bitacoras")
-        .upload(path, file, { upsert: true });
-
-      if (!uploadError) {
-        imageFields[fieldNames[i]] = path;
+      try {
+        imageUrl = await uploadCloudflareImage(file);
+      } catch {
+        redirect(
+          buildActionRedirect(`/dashboard/servicios/${parsed.data.servicioId}`, {
+            error: "La nota se creó, pero Cloudflare no pudo cargar una imagen.",
+          }),
+        );
       }
+
+      imageFields[fieldNames[i]] = imageUrl;
     }
 
     if (Object.keys(imageFields).length > 0) {
-      await supabase.from("bitacoras").update(imageFields).eq("id", bitacora.id);
+      const { error: updateError } = await supabase
+        .from("bitacoras")
+        .update(imageFields)
+        .eq("id", bitacora.id);
+
+      if (updateError) {
+        redirect(
+          buildActionRedirect(`/dashboard/servicios/${parsed.data.servicioId}`, {
+            error: "La nota se creó, pero no se pudieron guardar sus imágenes.",
+          }),
+        );
+      }
     }
   }
 

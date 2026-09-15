@@ -1,11 +1,10 @@
 "use server";
 
-import sharp from "sharp";
-
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { buildActionRedirect } from "@/lib/action-feedback";
+import { uploadCloudflareImage } from "@/lib/cloudflare-images";
 import { requireCurrentStaffProfile } from "@/lib/current-staff";
 import { currentUserHasPermission, PERMISOS } from "@/lib/permissions";
 import { CreateServicioSchema, UpdateServicioStatusSchema } from "@/lib/schemas/servicio";
@@ -16,30 +15,15 @@ const BASE = "/dashboard/servicios";
 const NUEVO = "/dashboard/servicios/nuevo";
 
 async function uploadImages(
-  supabase: Awaited<ReturnType<typeof createSupabaseServerActionClient>>,
-  bucket: string,
-  recordId: number,
   files: File[],
   maxCount: number,
-): Promise<Record<string, string | null>> {
+): Promise<Record<string, string>> {
   const fieldNames = ["imagen_uno", "imagen_dos", "imagen_tres", "imagen_cuatro", "imagen_cinco"].slice(0, maxCount);
-  const result: Record<string, string | null> = {};
+  const result: Record<string, string> = {};
 
   for (let i = 0; i < Math.min(files.length, maxCount); i++) {
     const file = files[i];
-    const path = `${recordId}/imagen_${i + 1}.webp`;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const webpBuffer = await sharp(Buffer.from(arrayBuffer)).webp({ quality: 80 }).toBuffer();
-
-    const { error } = await supabase.storage.from(bucket).upload(path, webpBuffer, {
-      upsert: true,
-      contentType: "image/webp",
-    });
-
-    if (!error) {
-      result[fieldNames[i]] = path;
-    }
+    result[fieldNames[i]] = await uploadCloudflareImage(file);
   }
 
   return result;
@@ -178,10 +162,31 @@ export async function createServicioAction(formData: FormData) {
   const files = rawFiles.filter((f): f is File => f instanceof File && f.size > 0);
 
   if (files.length > 0) {
-    const imageFields = await uploadImages(supabase, "servicios", servicio.id, files, 5);
+    let imageFields: Record<string, string>;
+
+    try {
+      imageFields = await uploadImages(files, 5);
+    } catch {
+      redirect(
+        buildActionRedirect(`${NUEVO}?step=2&vehiculoId=${parsed.data.vehiculoId}`, {
+          error: "Cloudflare no pudo cargar una imagen.",
+        }),
+      );
+    }
 
     if (Object.keys(imageFields).length > 0) {
-      await supabase.from("servicios").update(imageFields).eq("id", servicio.id);
+      const { error: imageUpdateError } = await supabase
+        .from("servicios")
+        .update(imageFields)
+        .eq("id", servicio.id);
+
+      if (imageUpdateError) {
+        redirect(
+          buildActionRedirect(`${NUEVO}?step=2&vehiculoId=${parsed.data.vehiculoId}`, {
+            error: "El servicio se creó, pero no se pudieron guardar sus imágenes.",
+          }),
+        );
+      }
     }
   }
 
@@ -266,18 +271,17 @@ export async function entregarServicioAction(formData: FormData) {
 
   const supabase = await createSupabaseServerActionClient();
 
-  // Upload signature PNG to Storage bucket "firmas"
   const base64 = signatureData.split(",")[1];
   const bytes = Buffer.from(base64, "base64");
-  const path = `${servicioId}/firma.png`;
+  let firmaUrl: string;
 
-  let firmaUrl: string | null = null;
-  const { error: uploadError } = await supabase.storage
-    .from("firmas")
-    .upload(path, bytes, { contentType: "image/png", upsert: true });
-
-  if (!uploadError) {
-    firmaUrl = path;
+  try {
+    const signatureFile = new File([bytes], `firma-servicio-${servicioId}.png`, {
+      type: "image/png",
+    });
+    firmaUrl = await uploadCloudflareImage(signatureFile);
+  } catch {
+    redirect(buildActionRedirect(entregaBase, { error: "Cloudflare no pudo cargar la firma." }));
   }
 
   // Atomic update: only succeeds when current status is 2 (Finalizado)
@@ -285,7 +289,7 @@ export async function entregarServicioAction(formData: FormData) {
     status: 3,
     fecha_entrega: new Date().toISOString(),
     usuario_entrega: staff.id,
-    ...(firmaUrl ? { firma_entrega_url: firmaUrl } : {}),
+    firma_entrega_url: firmaUrl,
   };
 
   const { data, error } = await supabase
