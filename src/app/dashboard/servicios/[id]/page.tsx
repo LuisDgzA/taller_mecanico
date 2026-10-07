@@ -92,8 +92,8 @@ export default async function ServicioDetailPage({
 
   if (!Number.isFinite(servicioId) || servicioId <= 0) notFound();
 
-  const supabase = await createSupabaseServerComponentClient();
-  const [staff, canAddNota, canDeleteNota, canEntregarVehiculo] = await Promise.all([
+  const [supabase, staff, canAddNota, canDeleteNota, canEntregarVehiculo] = await Promise.all([
+    createSupabaseServerComponentClient(),
     getCurrentStaffProfile(),
     currentUserHasPermission(PERMISOS.SERVICIOS_ADD_NOTA),
     currentUserHasPermission(PERMISOS.SERVICIOS_DEL_NOTA),
