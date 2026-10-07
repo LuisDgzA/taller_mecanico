@@ -56,13 +56,22 @@ export default async function ClienteDetailPage({
 
   if (!Number.isFinite(clienteId) || clienteId <= 0) notFound();
 
-  const [canEditCliente, canAddVehiculo, canEditVehiculo, canDeleteVehiculo, canDeleteCliente, canAddServicios] = await Promise.all([
+  const [
+    canEditCliente,
+    canAddVehiculo,
+    canEditVehiculo,
+    canDeleteVehiculo,
+    canDeleteCliente,
+    canAddServicios,
+    supabase,
+  ] = await Promise.all([
     currentUserHasPermission(PERMISOS.CLIENTES_EDIT),
     currentUserHasPermission(PERMISOS.CLIENTES_ADD_VEHICULO),
     currentUserHasPermission(PERMISOS.CLIENTES_EDIT_VEHICULO),
     currentUserHasPermission(PERMISOS.CLIENTES_DEL_VEHICULO),
     currentUserHasPermission(PERMISOS.CLIENTES_DEL),
     currentUserHasPermission(PERMISOS.SERVICIOS_ADD),
+    createSupabaseServerComponentClient(),
   ]);
 
   if (requestedAddVehicle && !canAddVehiculo) {
@@ -72,8 +81,6 @@ export default async function ClienteDetailPage({
   }
 
   const showAddVehicle = requestedAddVehicle && canAddVehiculo;
-
-  const supabase = await createSupabaseServerComponentClient();
   const [{ data: cliente }, { data: vehiculos }] = await Promise.all([
     supabase
       .from("clientes")

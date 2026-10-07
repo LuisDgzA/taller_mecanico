@@ -43,19 +43,23 @@ export default async function UsuariosPage({
     redirect("/dashboard");
   }
 
-  const params = await searchParams;
+  const [params, supabase, currentStaff, canDeactivateUsers, canEditUsers, canAddUser] =
+    await Promise.all([
+      searchParams,
+      createSupabaseServerComponentClient(),
+      getCurrentStaffProfile(),
+      currentUserHasPermission(PERMISOS.USUARIOS_DESACTIVAR),
+      currentUserHasPermission(PERMISOS.USUARIOS_EDIT),
+      currentUserHasPermission(PERMISOS.USUARIOS_ADD),
+    ]);
+
+  const hasAdminAccess = isSupabaseAdminConfigured();
   const query = params.q?.trim() ?? "";
   const error = params.error?.trim() ?? "";
   const success = params.success?.trim() ?? "";
   const page = Math.max(1, Number(params.page ?? "1") || 1);
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
-  const supabase = await createSupabaseServerComponentClient();
-  const currentStaff = await getCurrentStaffProfile();
-  const hasAdminAccess = isSupabaseAdminConfigured();
-  const canDeactivateUsers = await currentUserHasPermission(PERMISOS.USUARIOS_DESACTIVAR);
-  const canEditUsers = await currentUserHasPermission(PERMISOS.USUARIOS_EDIT);
-  const canAddUser = await currentUserHasPermission(PERMISOS.USUARIOS_ADD);
 
   let request = supabase
     .from("usuarios")

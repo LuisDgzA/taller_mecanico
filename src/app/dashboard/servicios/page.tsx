@@ -40,10 +40,11 @@ export default async function ServiciosPage({
 }: {
   searchParams: Promise<{ search?: string; status?: string }>;
 }) {
-  const canAddServicios = await currentUserHasPermission(PERMISOS.SERVICIOS_ADD);
-  const { search = "", status = "" } = await searchParams;
-
-  const supabase = await createSupabaseServerComponentClient();
+  const [canAddServicios, { search = "", status = "" }, supabase] = await Promise.all([
+    currentUserHasPermission(PERMISOS.SERVICIOS_ADD),
+    searchParams,
+    createSupabaseServerComponentClient(),
+  ]);
 
   let vehiculoIds: number[] | null = null;
   if (search) {
